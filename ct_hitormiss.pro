@@ -14,7 +14,7 @@
 ;
 ; INPUTS:
 ;    a: [nx,ny] gray-scale image data
-;    p: (x, y)  target location to hit
+;    p: [2,npts]  target locations to check for hits
 ;
 ; KEYWORD PARAMETERS:
 ;    range: range over which a circle's center will be sought.
@@ -37,8 +37,10 @@
 ;        [x,y,dist]
 ;
 ; OUTPUTS:
-;    b: [nx,ny] circle transform.  Peaks correspond to estimated
-;        centers of circular features in a.
+;    b: [nx,ny] Hit or miss map
+;       values:
+;       0: miss for all features
+;       n: hit for feature n
 ;
 ; PROCEDURE:
 ;    Compute the gradient of the image.  The local gradient at each
@@ -118,7 +120,7 @@ grada = sqrt(dadx^2 + dady^2)           ; magnitude of the gradient
 dgrada = noise * sqrt(2. * total(dx^2)) ; error in gradient estimate due to noise
 w = where(grada gt 2.*dgrada, npts)     ; select points with small angular uncertainty
 
-hit = 0.*a
+hit = 0*a
 
 if npts le 0 then $
    return, (returncoordinates) ? -1 : hit
