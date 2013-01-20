@@ -125,7 +125,7 @@ if npts le 0 then $
 
 xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
-xy += 1.
+xy += 1. ; is this needed for the /center flag on dadx, dady?
 
 qx = xy[0,*] - p[0]
 qy = xy[1,*] - p[1]
