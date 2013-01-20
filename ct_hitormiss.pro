@@ -88,12 +88,25 @@ if size(a_, /n_dimensions) ne 2 then begin
    message, 'A must be a two-dimensional numeric array', /inf
    return, -1
 endif
-
 sz = size(a_, /dimensions)
 nx = sz[0]
 ny = sz[1]
 
-if ~isa(range, /scalar, /number) then range = 100
+if ~isa(p, /number, /array) then begin
+   message, umsg, /inf
+   message, 'P must be an array of target coordinates', /inf
+   return, -1
+endif
+sz = size(p)
+if sz[0] gt 2 or sz[1] lt 2 then begin
+   message, umsg, /inf
+   message, 'P should be a [2,npts] array of coordinates', /inf
+   return, -1
+endif
+npts = (sz[0] eq 2) ? sz[2] : 1
+
+if ~isa(range, /scalar, /number) then $
+   range = 100
 
 dodeinterlace = isa(deinterlace, /scalar, /number)
 if dodeinterlace then begin
