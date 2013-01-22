@@ -27,19 +27,11 @@
 ;        transform on odd field of an interlaced image.
 ;        If set to an even number, transform even field.
 ;
-; KEYWORD FLAGS:
-;    coordinates: If set, return coordinates of hit/miss pixels
-;        [x,y,hm] where hm is 1 for hits and 0 for misses
-;
-;    distance: If set, return image with contributing pixels labeled
-;        by their distance to the target point.
-;        If COORDINATES also is set, then return
-;        [x,y,dist]
-;
 ; OUTPUTS:
 ;    b: [nx,ny] Hit or miss map
 ;       values:
-;       0: miss for all features
+;       -1: miss for all features
+;       0: no determination
 ;       n: hit for feature n
 ;
 ; PROCEDURE:
@@ -64,6 +56,8 @@
 ;    error in voting direction.  Eliminated PRECISION keyword.
 ; 11/30/2012 DGG Fixed hit test for /coordinates.
 ; 01/16/2012 DGG estimate noise with MAD() by default.
+; 01/21/2012 DGG complete overhaul: hit or miss for multiple target
+;    points.  Remove COORDINATES and DISTANCE keywords.
 ;
 ; Copyright (c) 2012-2013 David G. Grier
 ;-
@@ -71,9 +65,7 @@
 function ct_hitormiss, a_, p, $
                        range = range, $
                        noise = noise, $
-                       deinterlace = deinterlace, $
-                       distance = distance, $
-                       coordinates = coordinates
+                       deinterlace = deinterlace
 
 COMPILE_OPT IDL2
 
@@ -117,8 +109,6 @@ endif else $
 
 if ~isa(noise, /scalar, /number) then $
    noise = mad(a)
-
-returncoordinates = keyword_set(coordinates)
 
 hit = 0*a
 
