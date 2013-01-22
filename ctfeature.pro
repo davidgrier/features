@@ -52,10 +52,9 @@
 ; 11/25/2012 DGG Removed NOISE and RANGE parameters.
 ; 12/21/2012 DGG Pass NOISE estimate to CIRCLETRANSFORM to take
 ;   advantage of new range-estimation code.
-; 01/16/2013 DGG accept RANGE keyword.
+; 01/16/2013 DGG Use RANGE from CIRCLETRANSFORM to estimate threshold.
 ;
-; Copyright (c) 2012 David G. Grier
-;
+; Copyright (c) 2012-2013 David G. Grier
 ;-
 function ctfeature, a, $
                     noise = noise, $
