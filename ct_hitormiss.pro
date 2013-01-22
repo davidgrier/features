@@ -135,7 +135,6 @@ costheta = dadx[w]/grada
 sintheta = dady[w]/grada
 
 hit[w] = -1                     ; all points start out as misses
-;dist = fltarr(ngood) + nx^2 + ny^2
 
 xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0

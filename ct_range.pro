@@ -118,35 +118,26 @@ dgrada = noise * sqrt(2. * total(dx^2)) ; error in gradient estimate due to nois
 w = where(grada gt 2.*dgrada, ngood)    ; select points with small angular uncertainty
 if ngood le 0 then $
    return, rad - 1
+
+grada = grada[w]
+dgrada = dgrada[w]/grada
+costheta = dadx[w]/grada
+sintheta = dady[w]/grada
+
 xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
 xy += 1.
 
+id = (npts gt 1) ? cluster(xy, p[0:1, *]) : intarr(npts)
+
 for n = 0, npts-1 do begin
    qx = xy[0,*] - p[0, n]
    qy = xy[1,*] - p[1, n]
-
-   ww = where((qx^2 + qy^2) le range^2, nrange)
-   if nrange le 0 then begin
-      rad[n] = -1
-      continue
-   endif
-   
-   w = w[ww]
-   qx = qx[ww]
-   qy = qy[ww]
-   grada = grada[w]
-   costheta = dadx[w] / grada
-   sintheta = dady[w] / grada
+   rsq = qx^2 + qy^2
    delta = abs(qx * sintheta - qy * costheta)
-   ddelta = dgrada * abs((qx * costheta + qy * sintheta)) / grada
-   ww = where(delta lt ddelta, nhits)
-   if nhits le 0 then begin
-      rad[n] = -1
-      continue
-   endif
-   
-   rad[n] = round(range*sqrt(float(nhits)/float(nrange)))
+   ddelta = dgrada * abs((qx * costheta + qy * sintheta)) < 5.
+   ww = where((delta le ddelta) and (id eq n), nhits)
+   rad[n] = (nhits gt 0) ? sqrt(mean(rsq[ww])) : -1
 endfor
 
 return, rad
