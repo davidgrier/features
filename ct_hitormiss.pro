@@ -55,9 +55,10 @@
 ;    Eliminated SMOOTHFACTOR parameter.  Precision set by estimated
 ;    error in voting direction.  Eliminated PRECISION keyword.
 ; 11/30/2012 DGG Fixed hit test for /coordinates.
-; 01/16/2012 DGG estimate noise with MAD() by default.
-; 01/21/2012 DGG complete overhaul: hit or miss for multiple target
+; 01/16/2013 DGG estimate noise with MAD() by default.
+; 01/21/2013 DGG complete overhaul: hit or miss for multiple target
 ;    points.  Remove COORDINATES and DISTANCE keywords.
+; 01/22/2013 DGG Use CLUSTER() to restrict hits nearest-neighborhoods.
 ;
 ; Copyright (c) 2012-2013 David G. Grier
 ;-
@@ -123,26 +124,32 @@ dady = convol(a, transpose(dx), /center, /edge_truncate)
 if dodeinterlace then dady /= 2.
 grada = sqrt(dadx^2 + dady^2)           ; magnitude of the gradient
 dgrada = noise * sqrt(2. * total(dx^2)) ; error in gradient estimate due to noise
+
 w = where(grada gt 2.*dgrada, ngood)    ; select points with small angular uncertainty
 if ngood le 0 then $
    return, hit
+
 grada = grada[w]
 dgrada = dgrada[w]/grada
 costheta = dadx[w]/grada
 sintheta = dady[w]/grada
 
 hit[w] = -1                     ; all points start out as misses
+;dist = fltarr(ngood) + nx^2 + ny^2
 
 xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
 xy += 1. ; is this needed for the /center flag on dadx, dady?
 
+id = (npts gt 1) ? cluster(xy, p[0:1, *]) : intarr(npts)
+
 for n = 0, npts-1 do begin
    qx = xy[0,*] - p[0, n]
    qy = xy[1,*] - p[1, n]
+   rsq = qx^2 + qy^2
    delta = abs(qx * sintheta - qy * costheta)
    ddelta = dgrada * abs((qx * costheta + qy * sintheta)) < 5.
-   ww = where(delta le ddelta, nhit)
+   ww = where((delta le ddelta) and (id eq n), nhit)
    if nhit gt 0 then $
       hit[w[ww]] = n + 1
 endfor
