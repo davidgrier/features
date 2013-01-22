@@ -120,6 +120,8 @@ if ~isa(noise, /scalar, /number) then $
 
 returncoordinates = keyword_set(coordinates)
 
+hit = 0*a
+
 ; Third-order two-dimensional Savitzky-Golay filter over 5x5 image patch
 dx = [[ 0.0738, -0.1048,  0.0000,  0.1048, -0.0738], $
       [-0.0119, -0.1476,  0.0000,  0.1476,  0.0119], $
@@ -131,49 +133,30 @@ dady = convol(a, transpose(dx), /center, /edge_truncate)
 if dodeinterlace then dady /= 2.
 grada = sqrt(dadx^2 + dady^2)           ; magnitude of the gradient
 dgrada = noise * sqrt(2. * total(dx^2)) ; error in gradient estimate due to noise
-w = where(grada gt 2.*dgrada, npts)     ; select points with small angular uncertainty
+w = where(grada gt 2.*dgrada, ngood)    ; select points with small angular uncertainty
+if ngood le 0 then $
+   return, hit
+grada = grada[w]
+dgrada = dgrada[w]/grada
+costheta = dadx[w]/grada
+sintheta = dady[w]/grada
 
-hit = 0*a
-
-if npts le 0 then $
-   return, (returncoordinates) ? -1 : hit
+hit[w] = -1                     ; all points start out as misses
 
 xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
 xy += 1. ; is this needed for the /center flag on dadx, dady?
 
-qx = xy[0,*] - p[0]
-qy = xy[1,*] - p[1]
+for n = 0, npts-1 do begin
+   qx = xy[0,*] - p[0, n]
+   qy = xy[1,*] - p[1, n]
+   delta = abs(qx * sintheta - qy * costheta)
+   ddelta = dgrada * abs((qx * costheta + qy * sintheta)) < 5.
+   ww = where(delta le ddelta, nhit)
+   if nhit gt 0 then $
+      hit[w[ww]] = n + 1
+endfor
 
-ww = where((qx^2 + qy^2) le range^2, npts)
-if npts le 0 then $
-   return, (returncoordinates) ? -1 : hit
-
-w = w[ww]
-qx = qx[ww]
-qy = qy[ww]
-grada = grada[w]
-costheta = dadx[w] / grada
-sintheta = dady[w] / grada
-delta = abs(qx * sintheta - qy * costheta)
-ddelta = dgrada * abs((qx * costheta + qy * sintheta)) / grada
-
-if keyword_set(distance) then begin
-   if returncoordinates then $
-      return, [xy[*,ww], transpose(delta)]
-   hit[w] = delta
-   return, hit
-endif
-
-if returncoordinates then $
-   return, [xy[*, ww], transpose(delta) le ddelta]
-
-hit[w] = -1.                    ; assume all points have missed
-
-ww = where(delta le ddelta, npts)
-if npts le 0 then return, hit
-
-hit[w[ww]] = 1.
 return, hit
 
 end
