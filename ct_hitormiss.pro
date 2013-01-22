@@ -17,9 +17,6 @@
 ;    p: [2,npts]  target locations to check for hits
 ;
 ; KEYWORD PARAMETERS:
-;    range: range over which a circle's center will be sought.
-;        Default: 100 pixels
-;
 ;    noise: estimate for additive pixel noise.
 ;        Default: noise estimated by MAD().
 ;
@@ -59,12 +56,12 @@
 ; 01/21/2013 DGG complete overhaul: hit or miss for multiple target
 ;    points.  Remove COORDINATES and DISTANCE keywords.
 ; 01/22/2013 DGG Use CLUSTER() to restrict hits nearest-neighborhoods.
+;    Removed RANGE keyword.
 ;
 ; Copyright (c) 2012-2013 David G. Grier
 ;-
 
 function ct_hitormiss, a_, p, $
-                       range = range, $
                        noise = noise, $
                        deinterlace = deinterlace
 
@@ -97,9 +94,6 @@ if sz[0] gt 2 or sz[1] lt 2 then begin
    return, -1
 endif
 npts = (sz[0] eq 2) ? sz[2] : 1
-
-if ~isa(range, /scalar, /number) then $
-   range = 100
 
 dodeinterlace = isa(deinterlace, /scalar, /number)
 if dodeinterlace then begin
