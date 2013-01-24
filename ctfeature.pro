@@ -18,9 +18,6 @@
 ;    noise: estimate for additive noise in pixel values
 ;        Default: set by CIRCLETRANSFORM
 ;
-;    range: range over which to search for features [pixels]
-;        Default: set by CIRCLETRANSFORM.
-;
 ;    threshold: threshold for detecting features
 ;        Default: estimated from range computed by CIRCLETRANSFORM. 
 ;

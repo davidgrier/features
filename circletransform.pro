@@ -17,7 +17,7 @@
 ;
 ; KEYWORD PARAMETERS:
 ;    noise: estimate for additive pixel noise.
-;        Default: noise estimated by MAD().C;
+;        Default: noise estimated by MAD().
 ;    deinterlace: if set to an odd number, then only perform
 ;        transform on odd field of an interlaced image.
 ;        If set to an even number, transform even field.
@@ -95,7 +95,7 @@ ny = sz[1]
 
 if ~isa(range, /scalar, /number) then range = 100
 
-dodeinterlace = isa(deinterlace, /scalar, /number)
+dodeinterlace = isa(deinterlace, /scalar, /number) and deinterlace gt 0
 if dodeinterlace then begin
    n0 = deinterlace mod 2
    a = float(a_[*, n0:*:2])
