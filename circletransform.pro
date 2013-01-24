@@ -21,6 +21,7 @@
 ;    deinterlace: if set to an odd number, then only perform
 ;        transform on odd field of an interlaced image.
 ;        If set to an even number, transform even field.
+;        Default: Not set or set to zero: transform entire frame.
 ;
 ; OUTPUTS:
 ;    b: [nx,ny] circle transform.  Peaks correspond to estimated
@@ -65,6 +66,7 @@
 ;    direction.  Remove RANGE keyword.
 ; 11/30/2012 DGG Optionally return mean range as RANGE keyword.
 ; 01/16/2013 DGG estimate noise with MAD() by default.
+; 01/24/2013 DGG correct test for deinterlace = 0.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;

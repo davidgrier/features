@@ -23,6 +23,7 @@
 ;    deinterlace: if set to an odd number, then only perform
 ;        transform on odd field of an interlaced image.
 ;        If set to an even number, transform even field.
+;        Default: Not set or set to 0: transform entire frame.
 ;
 ; OUTPUTS:
 ;    rad: [npts] array of range estimates for each input point.
@@ -43,6 +44,7 @@
 ; 01/16/2013 Written by David G. Grier, New York University.
 ; 01/22/2013 DGG Use CLUSTER() to restrict hits to
 ;   nearest-neighborhood.  Removed RANGE keyword.
+; 01/24/2013 DGG Correct test for deinterlace = 0.
 ;
 ; Copyright (c) 2013 David G. Grier
 ;-
