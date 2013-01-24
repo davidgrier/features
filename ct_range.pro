@@ -86,7 +86,7 @@ if sz[0] gt 2 or sz[1] lt 2 then begin
 endif
 npts = (sz[0] eq 2) ? sz[2] : 1
 
-dodeinterlace = isa(deinterlace, /scalar, /number)
+dodeinterlace = isa(deinterlace, /scalar, /number) ? deinterlace gt 0 : 0
 if dodeinterlace then begin
    n0 = deinterlace mod 2
    a = float(a_[*, n0:*:2])
