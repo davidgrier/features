@@ -45,6 +45,7 @@
 ; 01/22/2013 DGG Use CLUSTER() to restrict hits to
 ;   nearest-neighborhood.  Removed RANGE keyword.
 ; 01/24/2013 DGG Correct test for deinterlace = 0.
+; 01/25/2013 DGG Fix hit test for single-target case.
 ;
 ; Copyright (c) 2013 David G. Grier
 ;-
@@ -125,7 +126,7 @@ xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
 xy += 1.
 
-id = (npts gt 1) ? cluster(xy, p[0:1, *]) : intarr(npts)
+id = (npts gt 1) ? cluster(xy, p[0:1, *]) : intarr(ngood)
 
 for n = 0, npts-1 do begin
    qx = xy[0,*] - p[0, n]
