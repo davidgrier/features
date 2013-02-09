@@ -46,6 +46,7 @@
 ;   nearest-neighborhood.  Removed RANGE keyword.
 ; 01/24/2013 DGG Correct test for deinterlace = 0.
 ; 01/25/2013 DGG Fix hit test for single-target case.
+; 02/09/2013 DGG Use SAVGOL2D() to compute derivative kernel.
 ;
 ; Copyright (c) 2013 David G. Grier
 ;-
@@ -101,12 +102,7 @@ if ~isa(noise, /scalar, /number) then $
 
 rad = intarr(npts)   ; the answer
 
-; Third-order two-dimensional Savitzky-Golay filter over 5x5 image patch
-dx = [[ 0.0738, -0.1048,  0.0000,  0.1048, -0.0738], $
-      [-0.0119, -0.1476,  0.0000,  0.1476,  0.0119], $
-      [-0.0405, -0.1619,  0.0000,  0.1619,  0.0405], $
-      [-0.0119, -0.1476,  0.0000,  0.1476,  0.0119], $
-      [ 0.0738, -0.1048,  0.0000,  0.1048, -0.0738]]
+dx = savgol2d(15, 6, dx = 1)
 dadx = convol(a, dx, /center, /edge_truncate)
 dady = convol(a, transpose(dx), /center, /edge_truncate)
 if dodeinterlace then dady /= 2.
