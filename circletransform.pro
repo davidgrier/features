@@ -67,6 +67,7 @@
 ; 11/30/2012 DGG Optionally return mean range as RANGE keyword.
 ; 01/16/2013 DGG estimate noise with MAD() by default.
 ; 01/24/2013 DGG correct test for deinterlace = 0.
+; 02/09/2013 DGG use savgol2d() to compute derivatives.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -107,12 +108,7 @@ endif else $
 if ~isa(noise, /scalar, /number) then $
    noise = mad(a)
 
-; Third-order two-dimensional Savitzky-Golay filter over 5x5 image patch
-dx = [[ 0.0738, -0.1048,  0.0000,  0.1048, -0.0738], $
-      [-0.0119, -0.1476,  0.0000,  0.1476,  0.0119], $
-      [-0.0405, -0.1619,  0.0000,  0.1619,  0.0405], $
-      [-0.0119, -0.1476,  0.0000,  0.1476,  0.0119], $
-      [ 0.0738, -0.1048,  0.0000,  0.1048, -0.0738]]
+dx = savgol2d(15, 6, dx = 1)
 dadx = convol(a, dx, /center, /edge_truncate)
 dady = convol(a, transpose(dx), /center, /edge_truncate)
 if dodeinterlace then dady /= 2.
