@@ -68,6 +68,7 @@
 ; 01/16/2013 DGG estimate noise with MAD() by default.
 ; 01/24/2013 DGG correct test for deinterlace = 0.
 ; 02/09/2013 DGG use savgol2d() to compute derivatives.
+;    Displace by half a pixel to center
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
