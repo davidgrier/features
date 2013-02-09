@@ -58,6 +58,7 @@
 ; 01/22/2013 DGG Use CLUSTER() to restrict hits nearest-neighborhoods.
 ;    Removed RANGE keyword.
 ; 02/09/2012 DGG Use SAVGOL2D() to compute derivative kernel.
+;    Displace by half a pixel to center
 ;
 ; Copyright (c) 2012-2013 David G. Grier
 ;-
@@ -127,7 +128,7 @@ hit[w] = -1                     ; all points start out as misses
 
 xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
-xy += 1.
+xy += 0.5                       ; to center over pixels
 
 id = (npts gt 1) ? cluster(xy, p[0:1, *]) : intarr(npts)
 

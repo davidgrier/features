@@ -122,7 +122,7 @@ if npts le 0 then return, b
 
 xy = array_indices(grada, w)    ; coordinates of pixels with strong gradients
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
-xy += 1.                        ; to center on pixels
+xy += 0.5                       ; to center over pixels
 
 grada = grada[w]                ; gradient direction at each pixel
 costheta = dadx[w] / grada

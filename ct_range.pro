@@ -43,10 +43,11 @@
 ; MODIFICATION HISTORY:
 ; 01/16/2013 Written by David G. Grier, New York University.
 ; 01/22/2013 DGG Use CLUSTER() to restrict hits to
-;   nearest-neighborhood.  Removed RANGE keyword.
+;    nearest-neighborhood.  Removed RANGE keyword.
 ; 01/24/2013 DGG Correct test for deinterlace = 0.
 ; 01/25/2013 DGG Fix hit test for single-target case.
 ; 02/09/2013 DGG Use SAVGOL2D() to compute derivative kernel.
+;    Displace by half a pixel to center.
 ;
 ; Copyright (c) 2013 David G. Grier
 ;-
@@ -120,7 +121,7 @@ sintheta = dady[w]/grada
 
 xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
-xy += 1.
+xy += 0.5                       ; to center over pixels
 
 id = (npts gt 1) ? cluster(xy, p[0:1, *]) : intarr(ngood)
 
