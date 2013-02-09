@@ -102,9 +102,9 @@ if ~isa(noise, /scalar, /number) then $
 
 rad = intarr(npts)   ; the answer
 
-dx = savgol2d(15, 6, dx = 1)
-dadx = convol(a, dx, /center, /edge_truncate)
-dady = convol(a, transpose(dx), /center, /edge_truncate)
+dx = savgol2d(7, 3, dx = 1)
+dadx = convol(a, dx, /edge_truncate)
+dady = convol(a, transpose(dx), /edge_truncate)
 if dodeinterlace then dady /= 2.
 grada = sqrt(dadx^2 + dady^2)           ; magnitude of the gradient
 dgrada = noise * sqrt(2. * total(dx^2)) ; error in gradient estimate due to noise

@@ -107,9 +107,9 @@ if ~isa(noise, /scalar, /number) then $
    noise = mad(a)
 
 hit = 0*a
-dx = savgol2d(15, 6, dx = 1)
-dadx = convol(a, dx, /center, /edge_truncate)
-dady = convol(a, transpose(dx), /center, /edge_truncate)
+dx = savgol2d(7, 3, dx = 1)
+dadx = convol(a, dx, /edge_truncate)
+dady = convol(a, transpose(dx), /edge_truncate)
 if dodeinterlace then dady /= 2.
 grada = sqrt(dadx^2 + dady^2)           ; magnitude of the gradient
 dgrada = noise * sqrt(2. * total(dx^2)) ; error in gradient estimate due to noise
@@ -127,7 +127,7 @@ hit[w] = -1                     ; all points start out as misses
 
 xy = array_indices(a, w)
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
-xy += 1. ; is this needed for the /center flag on dadx, dady?
+xy += 1.
 
 id = (npts gt 1) ? cluster(xy, p[0:1, *]) : intarr(npts)
 
