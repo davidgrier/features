@@ -133,7 +133,7 @@ for n = 0, npts-1 do begin
    delta = abs(qx * sintheta - qy * costheta) ; distance from voting line to target
    ddelta = dgrada * abs((qx * costheta + qy * sintheta)) < 2.5 ; uncertainty
    ww = where((delta le ddelta) and (id eq n), nhits) ; must be closer than uncertainty
-   rad[n] = (nhits gt 0) ? sqrt(total(grada[ww]*rsq[ww])/total(grada[ww])) : -1
+   rad[n] = (nhits gt 0) ? sqrt(2.*total(grada[ww]*rsq[ww])/total(grada[ww])) : -1
 endfor
 
 return, rad
