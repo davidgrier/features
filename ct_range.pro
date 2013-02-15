@@ -48,6 +48,7 @@
 ; 01/25/2013 DGG Fix hit test for single-target case.
 ; 02/09/2013 DGG Use SAVGOL2D() to compute derivative kernel.
 ;    Displace by half a pixel to center.
+; 02/15/2013 DGG Weight radius calculation by magnitude of gradient.
 ;
 ; Copyright (c) 2013 David G. Grier
 ;-
@@ -129,10 +130,10 @@ for n = 0, npts-1 do begin
    qx = xy[0,*] - p[0, n]
    qy = xy[1,*] - p[1, n]
    rsq = qx^2 + qy^2
-   delta = abs(qx * sintheta - qy * costheta)
-   ddelta = dgrada * abs((qx * costheta + qy * sintheta)) < 5.
-   ww = where((delta le ddelta) and (id eq n), nhits)
-   rad[n] = (nhits gt 0) ? sqrt(mean(rsq[ww])) : -1
+   delta = abs(qx * sintheta - qy * costheta) ; distance from voting line to target
+   ddelta = dgrada * abs((qx * costheta + qy * sintheta)) < 2.5 ; uncertainty
+   ww = where((delta le ddelta) and (id eq n), nhits) ; must be closer than uncertainty
+   rad[n] = (nhits gt 0) ? sqrt(total(grada[ww]*rsq[ww])/total(grada[ww])) : -1
 endfor
 
 return, rad
