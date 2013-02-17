@@ -25,10 +25,11 @@
 ;        the field of view.
 ;        Default: origin is set at the lower left corner.
 ;
+; KEYWORD PARAMETERS:
 ;    deinterlace: if set to an even or odd integer then analyze only
 ;        the even or odd field in an interlaced image, respectively.
+;        Default: not set, or set to 0: analyze entire image.
 ;
-; KEYWORD PARAMETERS:
 ;    pickn: return the brightest N features
 ;
 ;    count: number of features returned.
@@ -66,9 +67,11 @@
 ; 07/18/2012 DGG Fixed half-pixel offset with CENTER keyword.
 ;    Added DEINTERLACE keyword.
 ; 10/16/2012 DGG Added COUNT keyword.
-; 10/25/2012 DGG COUNT should not include background as a feature (duh).
+; 10/25/2012 DGG COUNT should not include background as a feature
+;    (duh).
+; 02/17/2013 DGG Setting DEINTERLACE = 0 does not deinterlace.
 ;
-; Copyright (c) 2004-2012 David G. Grier and David B. Ruffner
+; Copyright (c) 2004-2013 David G. Grier and David B. Ruffner
 ;-
 
 function fastfeature, image, threshold, $
@@ -103,7 +106,7 @@ if nd ne 2 && nd ne 3 then begin
 endif
 
 dodeinterlace = 0
-if isa(deinterlace, /number, /scalar) then begin
+if keyword_set(deinterlace) then begin
    n0 = long(deinterlace) mod 1L
    dodeinterlace = 1
 endif
