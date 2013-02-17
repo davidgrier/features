@@ -79,7 +79,7 @@ ct = circletransform(a, noise = noise, range = range, deinterlace = deinterlace)
 
 ;; centers of spots are estimates for particle centers: (xp, yp)
 if ~isa(threshold, /number, /scalar) then begin
-   threshold = round(!pi * range^2 / 4.)
+   threshold = round(!pi * range^2 / 3.)
    if keyword_set(deinterlace) then threshold /= 2
 endif
 

@@ -68,7 +68,8 @@
 ; 01/16/2013 DGG estimate noise with MAD() by default.
 ; 01/24/2013 DGG correct test for deinterlace = 0.
 ; 02/09/2013 DGG use savgol2d() to compute derivatives.
-;    Displace by half a pixel to center
+;    Displace by half a pixel to center, not a whole pixel.
+; 02/17/2013 DGG RANGE is the median range of voting pixels, not the mean.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -141,7 +142,7 @@ for i = 0L, npts-1L do begin
    b[x, y] += 1 
 endfor
 
-range = mean(rng)
+range = median(rng)
 
 return, b
 end
