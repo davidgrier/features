@@ -70,7 +70,8 @@
 ; 10/25/2012 DGG COUNT should not include background as a feature
 ;    (duh).
 ; 02/17/2013 DGG Setting DEINTERLACE = 0 does not deinterlace.
-; 02/26/2013 DGG Clean up threshold code.
+; 02/26/2013 DGG Clean up threshold code.  Set ALL_NEIGHBORS for
+;    label_regions.
 ;
 ; Copyright (c) 2004-2013 David G. Grier and David B. Ruffner
 ;-
@@ -118,10 +119,10 @@ if keyword_set(deinterlace) then begin
    n0 = long(deinterlace) mod 1L
    img = image[*,n0:*:2,*]
    a = keyword_set(dark) ? label_region(img lt threshold) : $
-       label_region(img gt threshold)
+       label_region(img gt threshold, /all_neighbors)
 endif else begin
    a = keyword_set(dark) ? label_region(image lt threshold) : $
-       label_region(image gt threshold)
+       label_region(image gt threshold, /all_neighbors)
 endelse
 
 ;;; Find centroid of each labeled region
