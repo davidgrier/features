@@ -70,6 +70,7 @@
 ; 10/25/2012 DGG COUNT should not include background as a feature
 ;    (duh).
 ; 02/17/2013 DGG Setting DEINTERLACE = 0 does not deinterlace.
+; 02/26/2013 DGG Clean up threshold code.
 ;
 ; Copyright (c) 2004-2013 David G. Grier and David B. Ruffner
 ;-
@@ -105,13 +106,16 @@ if nd ne 2 && nd ne 3 then begin
    return, -1
 endif
 
+if ~isa(threshold, /number, /scalar) then begin
+   message, umsg, /inf
+   message, 'threshold must be a number', /inf
+   return, -1
+endif
+   
 dodeinterlace = 0
 if keyword_set(deinterlace) then begin
-   n0 = long(deinterlace) mod 1L
    dodeinterlace = 1
-endif
-
-if dodeinterlace then begin
+   n0 = long(deinterlace) mod 1L
    img = image[*,n0:*:2,*]
    a = keyword_set(dark) ? label_region(img lt threshold) : $
        label_region(img gt threshold)
