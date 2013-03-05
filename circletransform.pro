@@ -69,7 +69,9 @@
 ; 01/24/2013 DGG correct test for deinterlace = 0.
 ; 02/09/2013 DGG use savgol2d() to compute derivatives.
 ;    Displace by half a pixel to center, not a whole pixel.
-; 02/17/2013 DGG RANGE is the median range of voting pixels, not the mean.
+; 02/17/2013 DGG RANGE is the median range of voting pixels, not the
+;    mean.
+; 03/04/2013 DGG shift by +1 rather than by +0.5.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -124,7 +126,7 @@ if npts le 0 then return, b
 
 xy = array_indices(grada, w)    ; coordinates of pixels with strong gradients
 if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
-xy += 0.5                       ; to center over pixels
+xy += 1.                       ; to center over pixels
 
 grada = grada[w]                ; gradient direction at each pixel
 costheta = dadx[w] / grada
