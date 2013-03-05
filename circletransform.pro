@@ -71,7 +71,8 @@
 ;    Displace by half a pixel to center, not a whole pixel.
 ; 02/17/2013 DGG RANGE is the median range of voting pixels, not the
 ;    mean.
-; 03/04/2013 DGG shift by +1 rather than by +0.5.
+; 03/04/2013 DGG shift by +1 rather than by +0.5.  Limit range if
+;    noise is very small
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -129,10 +130,11 @@ if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
 xy += 1.                       ; to center over pixels
 
 grada = grada[w]                ; gradient direction at each pixel
+dgrada = dgrada[w] / grada
 costheta = dadx[w] / grada
 sintheta = dady[w] / grada
 
-rng = round(2./tan(dgrada/grada/2.)) ; range over which to cast votes (4 pixel error)
+rng = round(2./tan(dgrada/2.) < nx)
 range = max(rng)
 r = findgen(2.*range + 1.) - range
 
