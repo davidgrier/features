@@ -286,8 +286,8 @@ if notnsqrd then begin
 ;   keeps nblocks reasonably small.   
    volume = 1
    for d = 0, dim-1 do begin
-      minn = min(xyzs[d,w], max = maxx)
-      volume = volume*(maxx-minn)
+      minn = min(xyzs[d, w], max = maxx)
+      volume *= maxx - minn
    endfor
    blocksize = maxdisp > (float(volume)/(20.*ngood))^(1./dim)
 endif
@@ -316,24 +316,24 @@ for i = istart, nsteps-1 do begin
          si = lonarr(m)
          spos = lonarr(n)
          dimm = lonarr(dim, /nozero)
-         coff = long(1)
+         coff = 1L
          for j = 0, dim-1 do begin
             minn = min([[abi[j,*]],[abpos[j,*]]], max = maxx)
-            abi[j,*] = abi[j,*] - minn
-            abpos[j,*] = abpos[j,*] - minn
+            abi[j,*] -= minn
+            abpos[j,*] -= minn
             dimm[j] = maxx - minn + 1
-            si = si + abi[j,*]*coff
-            spos = spos + abpos[j,*]*coff
-            coff = coff*dimm[j]
+            si += abi[j,*]*coff
+            spos += abpos[j,*]*coff
+            coff *= dimm[j]
          endfor
          nblocks = coff         ; the # of blocks in the volume
       
 ;   trim down (intersect) the hypercube if its too big to fit in the
 ;   particle volume. (i.e. if dimm(j) lt 3)
          cub = cube
-         deg = where(dimm lt 3)
-         if deg[0] ne -1 then begin
-            for j = 0, n_elements(deg)-1 do $
+         deg = where(dimm lt 3, ninside)
+         if ninside gt 0 then begin
+            for j = 0, ninside-1 do $
                cub = cub[*, where(cub[deg[j],*] lt dimm[deg[j]])]
          endif
       
@@ -362,11 +362,10 @@ for i = istart, nsteps-1 do begin
          strt = intarr(nblocks) - 1
          fnsh = intarr(nblocks, /nozero)
          for j = 0, m-1 do begin
-            if strt[si[isort[j]]] eq -1 then begin
-               strt[si[isort[j]]] = j
-               fnsh[si[isort[j]]] = j
-            endif else $
-               fnsh[si[isort[j]]] = j
+            ndx = si[isort[j]]
+            if strt[ndx] eq -1 then $
+               strt[ndx] = j
+            fnsh[ndx] = j
          endfor      
 
 ;   loop over the old particles, and find those new particles in the 'cube'.
