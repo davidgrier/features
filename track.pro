@@ -179,6 +179,7 @@
 ; 05/25/2012 Eric Weeks: Updated documentation.  Change findgens to
 ;    lindgens to accommodate very large data sets.  Long counters in
 ;    for loops.  Added QUIET keyword.
+; 03/17/2013 DGG Added COMPILE_OPT.
 ;
 ;	This code 'track.pro' is copyright 1999, by John C. Crocker. 
 ;	It should be considered 'freeware'- and may be distributed freely 
@@ -191,9 +192,10 @@ function track, xyzs, maxdisp, $
                 memory = memory, $
                 dim = dim,$
                 goodenough = goodenough, $
-                verbose = verbose, quiet=quiet
+                verbose = verbose, $
+                quiet = quiet
 
-;on_error,2 ; dump local variables if there is an error
+COMPILE_OPT IDL2
 
 dd = n_elements(xyzs[*,0]) - 1
 if not keyword_set(dim) then begin
@@ -205,20 +207,18 @@ if not keyword_set(memory) then memory = 0
 
 ; check the input time vector is ok, i.e. sorted and uniform
 t = reform(xyzs[dd,*])
-st = shift(t,1)
-st = t[1:*] - st[1:*]
-
-if total(st lt 0) ne 0 then $
+dt = t[1:*] - t
+if total(dt lt 0) ne 0 then $
    message, ' Error- Times are not monotonically increasing!'
 
-w = where(st gt 0, z)
-if z eq 0 then $
+w = where(dt gt 0, nsteps)
+if nsteps eq 0 then $
    message, ' Error- All data have the same time stamp!'
 
-z = z + 1L                      ; number of time steps
-
-if (total(st[w] ne st[w[0]]) ne 0) then $
+if ~array_equal(dt[w], dt[w[0]]) then $
    message, ' Warning- Times are not evenly gridded!', /inf
+
+nsteps++                        ; number of time steps
 
 ; partition the input data by unique times
 res = uniq(t)
@@ -245,7 +245,7 @@ if n gt 200 then zspan = 20
 if n gt 500 then zspan = 10
 
 resx = lonarr(n, zspan) - 1
-bigresx = lonarr(n, z) - 1
+bigresx = lonarr(n, nsteps) - 1
 mem = lonarr(n)
 uniqid = findgen( n )
 maxid = n
@@ -291,7 +291,7 @@ if notnsqrd then begin
 endif
 
 ;   Start the main loop over the frames.
-for i = istart, z-1 do begin
+for i = istart, nsteps-1 do begin
 
    ispan = i mod zspan   
       
@@ -767,7 +767,7 @@ for i = istart, z-1 do begin
 
 ;  we need to insert the working copy of resx into the big copy bigresx
 ;  do our house keeping every zspan time steps (dumping bad lost guys)
-   if (ispan eq zspan-1) or (i eq z-1) then begin
+   if (ispan eq zspan-1) or (i eq nsteps-1) then begin
 
 ;  if a permanently lost guy has fewer than goodenough valid positions
 ;  then we 'dump' him out of the data structure- this largely alleviates
@@ -777,7 +777,7 @@ for i = istart, z-1 do begin
       nold = n_elements(bigresx[*,0])
       nnew = n - nold
       if nnew gt 0 then begin   
-         newarr = fltarr(nnew, z) - 1.
+         newarr = fltarr(nnew, nsteps) - 1.
          bigresx = [bigresx,newarr]
       endif
       if keyword_set(goodenough) then begin
@@ -796,7 +796,7 @@ for i = istart, z-1 do begin
          endif
       endif
       if not verbose and not keyword_set(quiet) then $
-         message, strcompress(i+1)+' of'+strcompress(z)+' done. '+ $
+         message, strcompress(i+1)+' of'+strcompress(nsteps)+' done. '+ $
                   'Tracking'+strcompress(ntrk)+' particles, '+ $
                   strcompress(n)+' tracks total.', /inf
       bigresx[*,i-ispan:i] = resx[*,0:ispan]
@@ -833,7 +833,7 @@ for i = istart, z-1 do begin
          nvalid = nvalid[wkeep]
    endif
 
-endfor  ; the big loop over z time steps....
+endfor  ; the big loop over nsteps time steps....
 
 ;  make a final scan for short trajectories that weren't lost at the end. 
 if keyword_set(goodenough) then begin
