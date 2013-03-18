@@ -179,7 +179,7 @@
 ; 05/25/2012 Eric Weeks: Updated documentation.  Change findgens to
 ;    lindgens to accommodate very large data sets.  Long counters in
 ;    for loops.  Added QUIET keyword.
-; 03/17/2013 DGG Added COMPILE_OPT.
+; 03/17/2013 DGG Added COMPILE_OPT.  Simplify analysis of time steps.
 ;
 ;	This code 'track.pro' is copyright 1999, by John C. Crocker. 
 ;	It should be considered 'freeware'- and may be distributed freely 
@@ -222,20 +222,19 @@ nsteps++                        ; number of time steps
 
 ; partition the input data by unique times
 res = uniq(t)
-res = res + 1
-res = [0, res, n_elements(t)]
+res = [0, res+1, n_elements(t)]
 
 ; get the initial positions
 ngood = res[1] - res[0]
 eyes = lindgen(ngood) + res[0]
 
 if keyword_set(inipos) then begin
-   pos = inipos[0:dim-1,*]
+   pos = inipos[0:dim-1, *]
    istart = 0L 
-   n = n_elements(pos[0,*]) 
+   n = n_elements(pos[0, *]) 
 endif else begin
-   pos = xyzs[0:dim-1,eyes]
-   istart = 1L                  ;we don't need to track t=0.
+   pos = xyzs[0:dim-1, eyes]
+   istart = 1L                  ; we don't need to track t=0.
    n = ngood
 endelse
 
@@ -258,7 +257,7 @@ endif
 
 ; we may not need to track the first time step!
 if not keyword_set(inipos) then begin
-   resx[*,0] = eyes
+   resx[*, 0] = eyes
    if keyword_set(goodenough) then nvalid++
 endif
 
