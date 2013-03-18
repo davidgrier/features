@@ -182,7 +182,8 @@
 ; 03/17/2013 DGG Added COMPILE_OPT.  Simplify analysis of time steps.
 ;    Replace bitwise AND, OR and NOT operators with &&, || and ~.
 ;    Replace keyword_set() with numeric tests, where appropriate.
-;    Simplify "goodenough" tests.
+;    Simplify "goodenough" tests.  Simplify "inipos" tests.
+;    Calculate CUBE in "the IDL way".
 ;
 ;	This code 'track.pro' is copyright 1999, by John C. Crocker. 
 ;	It should be considered 'freeware'- and may be distributed freely 
@@ -277,14 +278,9 @@ notnsqrd = (sqrt(n*ngood) ge 200) && (dim lt 7)
 
 if notnsqrd then begin
 ;   construct the vertices of a 3x3x3... d-dimensional hypercube
-   cube = lonarr(dim,3^dim, /nozero)
-   for d = 0, dim-1 do begin
-      numb = 0
-      for j = 0, (3^dim)-1,3^d do begin
-         cube[d,j:j+(3^d)-1] = numb
-         numb = (numb+1) mod 3
-      endfor
-   endfor
+   cube = rebin(lindgen(1, 3^dim), dim, 3^dim)
+   for j = 1, dim-1 do cube[j, *] /= 3^j
+   cube mod= 3
 
 ;   calculate a blocksize which may be greater than maxdisp, but which
 ;   keeps nblocks reasonably small.   
