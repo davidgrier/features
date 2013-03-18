@@ -181,6 +181,8 @@
 ;    for loops.  Added QUIET keyword.
 ; 03/17/2013 DGG Added COMPILE_OPT.  Simplify analysis of time steps.
 ;    Replace bitwise AND, OR and NOT operators with &&, || and ~.
+;    Replace keyword_set() with numeric tests, where appropriate.
+;    Simplify "goodenough" tests.
 ;
 ;	This code 'track.pro' is copyright 1999, by John C. Crocker. 
 ;	It should be considered 'freeware'- and may be distributed freely 
@@ -221,6 +223,8 @@ if ~array_equal(dt[w], dt[w[0]]) then $
 
 nsteps++                        ; number of time steps
 
+doprune = isa(goodenough, /number, /scalar) && (goodenough gt 0)
+
 ; partition the input data by unique times
 res = uniq(t)
 res = [0, res+1, n_elements(t)]
@@ -251,7 +255,7 @@ uniqid = findgen(n)
 maxid = n
 olist = [0., 0.]
 
-if isa(goodenough, /number, /scalar) then begin
+if doprune then begin
    dumphash = bytarr(n)
    nvalid = intarr(n)
 endif
@@ -259,7 +263,7 @@ endif
 ; we may not need to track the first time step!
 if ~isa(inipos, /number, /array) then begin
    resx[*, 0] = eyes
-   if isa(goodenough, /number, /scalar) then nvalid++
+   if doprune then nvalid++
 endif
 
 ; set up some nice constants
@@ -720,8 +724,7 @@ for i = istart, nsteps-1 do begin
       w = where(resx[*,ispan] ge 0, nww)
       if nww gt 0 then begin
          pos[*,w] = xyzs[0:dim-1,resx[w,ispan]]
-         if isa(goodenough, /number, /scalar) then $
-            nvalid[w]++
+         if doprune then nvalid[w]++
       endif else $
          message, ' Warning, tracking zero particles!', /inf
 
@@ -735,7 +738,7 @@ for i = istart, nsteps-1 do begin
          mem = [mem,bytarr(nnew)]
 	 uniqid = [uniqid,findgen(nnew)+maxid]
 	 maxid += nnew
-         if isa(goodenough, /number, /scalar) then begin
+         if doprune then begin
             dumphash = [dumphash,bytarr(nnew)]
             nvalid = [nvalid,intarr(nnew)+1]
          endif
@@ -759,7 +762,7 @@ for i = istart, nsteps-1 do begin
    if nlost gt 0 then begin
       pos[*,wlost] = -maxdisp
       ; check to see if we should 'dump' newly lost guys
-      if isa(goodenough, /number, /scalar) then begin
+      if doprune then begin
          wdump = where(nvalid[wlost] lt goodenough, ndump)
          if ndump gt 0 then $
             dumphash[wlost[wdump]] = 1B
@@ -781,7 +784,7 @@ for i = istart, nsteps-1 do begin
          newarr = fltarr(nnew, nsteps) - 1.
          bigresx = [bigresx,newarr]
       endif
-      if isa(goodenough, /number, /scalar) then begin
+      if doprune then begin
          if (total(dumphash) gt 0) then begin
             if verbose then $
                message, 'Dumping bad trajectories...', /inf
@@ -830,14 +833,14 @@ for i = istart, nsteps-1 do begin
       uniqid = uniqid[wkeep]
       n = nkeep
       dumphash = bytarr(nkeep)
-      if isa(goodenough, /number, /scalar) then $
+      if doprune then $
          nvalid = nvalid[wkeep]
    endif
 
 endfor  ; the big loop over nsteps time steps....
 
 ;  make a final scan for short trajectories that weren't lost at the end. 
-if isa(goodenough, /number, /scalar) then begin
+if doprune then begin
    nvalid = total(bigresx ge 0, 2)
    wkeep = where(nvalid ge goodenough, nkeep)
    if nkeep lt n then begin
