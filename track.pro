@@ -201,7 +201,7 @@ COMPILE_OPT IDL2
 dd = n_elements(xyzs[*,0]) - 1
 if ~keyword_set(dim) then begin
    dim = 2 < dd
-   message,' Setting dim = '+strtrim(dim,2)+' by default', /inf
+   message,' Setting dim = ' + strtrim(dim,2) + ' by default', /inf
 endif
 
 if ~keyword_set(memory) then memory = 0
@@ -247,7 +247,7 @@ if n gt 500 then zspan = 10
 resx = lonarr(n, zspan) - 1
 bigresx = lonarr(n, nsteps) - 1
 mem = lonarr(n)
-uniqid = findgen( n )
+uniqid = findgen(n)
 maxid = n
 olist = [0., 0.]
 
