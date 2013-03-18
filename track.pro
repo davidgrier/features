@@ -224,6 +224,7 @@ if ~array_equal(dt[w], dt[w[0]]) then $
 nsteps++                        ; number of time steps
 
 doprune = isa(goodenough, /number, /scalar) && (goodenough gt 0)
+doinipos = isa(inipos, /number, /array)
 
 ; partition the input data by unique times
 res = uniq(t)
@@ -233,7 +234,7 @@ res = [0, res+1, n_elements(t)]
 ngood = res[1] - res[0]
 eyes = lindgen(ngood) + res[0]
 
-if ~isa(inipos, /number, /array) then begin
+if doinipos then begin
    pos = inipos[0:dim-1, *]
    istart = 0L 
    n = n_elements(pos[0, *]) 
@@ -261,7 +262,7 @@ if doprune then begin
 endif
 
 ; we may not need to track the first time step!
-if ~isa(inipos, /number, /array) then begin
+if ~doinipos then begin
    resx[*, 0] = eyes
    if doprune then nvalid++
 endif
@@ -730,7 +731,7 @@ for i = istart, nsteps-1 do begin
 
 ;     we need to add new guys, as appropriate.
       newguys = where(found eq 0, nnew)
-      if (nnew gt 0) && ~isa(inipos, /number, /array) then begin
+      if (nnew gt 0) && ~doinipos then begin
          newarr = fltarr(nnew, zspan) - 1.
          resx = [resx,newarr]
          resx[n:*,ispan] = eyes[newguys]
