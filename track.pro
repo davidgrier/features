@@ -848,7 +848,7 @@ if keyword_set(goodenough) then begin
 endif
 
 ;  make the final scan to 'pull' everybody else into the olist.
-wpull = where(pos(0,*) ne -2*maxdisp, npull)
+wpull = where(pos[0,*] ne -2*maxdisp, npull)
 if npull gt 0 then begin
    lillist = [0.,0.]
    for ipull = 0, npull-1 do begin
