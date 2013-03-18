@@ -180,6 +180,7 @@
 ;    lindgens to accommodate very large data sets.  Long counters in
 ;    for loops.  Added QUIET keyword.
 ; 03/17/2013 DGG Added COMPILE_OPT.  Simplify analysis of time steps.
+;    Replace bitwise AND, OR and NOT operators with &&, || and ~.
 ;
 ;	This code 'track.pro' is copyright 1999, by John C. Crocker. 
 ;	It should be considered 'freeware'- and may be distributed freely 
@@ -198,12 +199,12 @@ function track, xyzs, maxdisp, $
 COMPILE_OPT IDL2
 
 dd = n_elements(xyzs[*,0]) - 1
-if not keyword_set(dim) then begin
+if ~keyword_set(dim) then begin
    dim = 2 < dd
    message,' Setting dim = '+strtrim(dim,2)+' by default', /inf
 endif
 
-if not keyword_set(memory) then memory = 0
+if ~keyword_set(memory) then memory = 0
 
 ; check the input time vector is ok, i.e. sorted and uniform
 t = reform(xyzs[dd,*])
@@ -256,7 +257,7 @@ if keyword_set(goodenough) then begin
 endif
 
 ; we may not need to track the first time step!
-if not keyword_set(inipos) then begin
+if ~keyword_set(inipos) then begin
    resx[*, 0] = eyes
    if keyword_set(goodenough) then nvalid++
 endif
@@ -266,7 +267,7 @@ maxdisq = maxdisp^2
 verbose = keyword_set(verbose)
 
 ;Use fancy code for large n, small d
-notnsqrd = (sqrt(n*ngood) ge 200) AND (dim lt 7)
+notnsqrd = (sqrt(n*ngood) ge 200) && (dim lt 7)
 
 if notnsqrd then begin
 ;   construct the vertices of a 3x3x3... d-dimensional hypercube
@@ -534,7 +535,7 @@ for i = istart, nsteps-1 do begin
                      endif
                      doneb += 1
                   endif
-               endrep until (donea EQ adda) and (doneb EQ addb)
+               endrep until (donea EQ adda) && (doneb EQ addb)
                ; a thing of beauty is a joy forever.
 
                xsz = n_elements(uniq(listb[0:doneb-1],sort(listb[0:doneb-1])))
@@ -633,7 +634,7 @@ for i = istart, nsteps-1 do begin
                         endif else $
                            who += 1
                      endif else begin
-                        if not lost[who] and (losttot ne nlost) then begin
+                        if ~lost[who] && (losttot ne nlost) then begin
                            lost[who] = 1
                            losttot += 1
                            if pt[who] ne st[who] - 1 then $
@@ -662,7 +663,7 @@ for i = istart, nsteps-1 do begin
                         endelse
                      endelse   
                   endif else begin
-                     if not lost[who] and (losttot ne nlost) then begin
+                     if ~lost[who] && (losttot ne nlost) then begin
                         lost[who] = 1
                         losttot += 1
                         if pt[who] ne st[who] - 1 then $
@@ -725,7 +726,7 @@ for i = istart, nsteps-1 do begin
 
 ;     we need to add new guys, as appropriate.
       newguys = where(found eq 0, nnew)
-      if (nnew gt 0) and not keyword_set(inipos) then begin
+      if (nnew gt 0) && ~keyword_set(inipos) then begin
          newarr = fltarr(nnew, zspan) - 1.
          resx = [resx,newarr]
          resx[n:*,ispan] = eyes[newguys]
@@ -794,7 +795,7 @@ for i = istart, nsteps-1 do begin
             dumphash = bytarr(nkeep)
          endif
       endif
-      if not verbose and not keyword_set(quiet) then $
+      if ~verbose && ~keyword_set(quiet) then $
          message, strcompress(i+1)+' of'+strcompress(nsteps)+' done. '+ $
                   'Tracking'+strcompress(ntrk)+' particles, '+ $
                   strcompress(n)+' tracks total.', /inf
