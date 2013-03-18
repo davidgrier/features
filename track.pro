@@ -199,12 +199,12 @@ function track, xyzs, maxdisp, $
 COMPILE_OPT IDL2
 
 dd = n_elements(xyzs[*,0]) - 1
-if ~keyword_set(dim) then begin
+if ~isa(dim, /number, /scalar) then begin
    dim = 2 < dd
    message,' Setting dim = ' + strtrim(dim,2) + ' by default', /inf
 endif
 
-if ~keyword_set(memory) then memory = 0
+if ~isa(memory, /number, /scalar) then memory = 0
 
 ; check the input time vector is ok, i.e. sorted and uniform
 t = reform(xyzs[dd,*])
@@ -229,7 +229,7 @@ res = [0, res+1, n_elements(t)]
 ngood = res[1] - res[0]
 eyes = lindgen(ngood) + res[0]
 
-if keyword_set(inipos) then begin
+if ~isa(inipos, /number, /array) then begin
    pos = inipos[0:dim-1, *]
    istart = 0L 
    n = n_elements(pos[0, *]) 
@@ -251,20 +251,21 @@ uniqid = findgen(n)
 maxid = n
 olist = [0., 0.]
 
-if keyword_set(goodenough) then begin
+if isa(goodenough, /number, /scalar) then begin
    dumphash = bytarr(n)
    nvalid = intarr(n)
 endif
 
 ; we may not need to track the first time step!
-if ~keyword_set(inipos) then begin
+if ~isa(inipos, /number, /array) then begin
    resx[*, 0] = eyes
-   if keyword_set(goodenough) then nvalid++
+   if isa(goodenough, /number, /scalar) then nvalid++
 endif
 
 ; set up some nice constants
 maxdisq = maxdisp^2
 verbose = keyword_set(verbose)
+quiet = keyword_set(quiet)
 
 ;Use fancy code for large n, small d
 notnsqrd = (sqrt(n*ngood) ge 200) && (dim lt 7)
@@ -719,14 +720,14 @@ for i = istart, nsteps-1 do begin
       w = where(resx[*,ispan] ge 0, nww)
       if nww gt 0 then begin
          pos[*,w] = xyzs[0:dim-1,resx[w,ispan]]
-         if keyword_set(goodenough) then $
-            nvalid[w] += 1
+         if isa(goodenough, /number, /scalar) then $
+            nvalid[w]++
       endif else $
          message, ' Warning, tracking zero particles!', /inf
 
 ;     we need to add new guys, as appropriate.
       newguys = where(found eq 0, nnew)
-      if (nnew gt 0) && ~keyword_set(inipos) then begin
+      if (nnew gt 0) && ~isa(inipos, /number, /array) then begin
          newarr = fltarr(nnew, zspan) - 1.
          resx = [resx,newarr]
          resx[n:*,ispan] = eyes[newguys]
@@ -734,7 +735,7 @@ for i = istart, nsteps-1 do begin
          mem = [mem,bytarr(nnew)]
 	 uniqid = [uniqid,findgen(nnew)+maxid]
 	 maxid += nnew
-         if keyword_set(goodenough) then begin
+         if isa(goodenough, /number, /scalar) then begin
             dumphash = [dumphash,bytarr(nnew)]
             nvalid = [nvalid,intarr(nnew)+1]
          endif
@@ -758,7 +759,7 @@ for i = istart, nsteps-1 do begin
    if nlost gt 0 then begin
       pos[*,wlost] = -maxdisp
       ; check to see if we should 'dump' newly lost guys
-      if keyword_set(goodenough) then begin
+      if isa(goodenough, /number, /scalar) then begin
          wdump = where(nvalid[wlost] lt goodenough, ndump)
          if ndump gt 0 then $
             dumphash[wlost[wdump]] = 1B
@@ -780,7 +781,7 @@ for i = istart, nsteps-1 do begin
          newarr = fltarr(nnew, nsteps) - 1.
          bigresx = [bigresx,newarr]
       endif
-      if keyword_set(goodenough) then begin
+      if isa(goodenough, /number, /scalar) then begin
          if (total(dumphash) gt 0) then begin
             if verbose then $
                message, 'Dumping bad trajectories...', /inf
@@ -795,7 +796,7 @@ for i = istart, nsteps-1 do begin
             dumphash = bytarr(nkeep)
          endif
       endif
-      if ~verbose && ~keyword_set(quiet) then $
+      if ~verbose && ~quiet then $
          message, strcompress(i+1)+' of'+strcompress(nsteps)+' done. '+ $
                   'Tracking'+strcompress(ntrk)+' particles, '+ $
                   strcompress(n)+' tracks total.', /inf
@@ -829,14 +830,14 @@ for i = istart, nsteps-1 do begin
       uniqid = uniqid[wkeep]
       n = nkeep
       dumphash = bytarr(nkeep)
-      if keyword_set(goodenough) then $
+      if isa(goodenough, /number, /scalar) then $
          nvalid = nvalid[wkeep]
    endif
 
 endfor  ; the big loop over nsteps time steps....
 
 ;  make a final scan for short trajectories that weren't lost at the end. 
-if keyword_set(goodenough) then begin
+if isa(goodenough, /number, /scalar) then begin
    nvalid = total(bigresx ge 0, 2)
    wkeep = where(nvalid ge goodenough, nkeep)
    if nkeep lt n then begin
