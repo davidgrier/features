@@ -137,7 +137,7 @@ dgrada = dgrada[w] / grada
 costheta = dadx[w] / grada
 sintheta = dady[w] / grada
 
-rng = round(2./tan(dgrada/2.) < nx)
+rng = round(2./tan(dgrada/2.)) < nx
 range = max(rng)
 r = findgen(2*range + 1) - range
 
