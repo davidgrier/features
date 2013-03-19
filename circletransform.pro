@@ -74,7 +74,8 @@
 ; 03/04/2013 DGG shift by +1 rather than by +0.5.  Limit range if
 ;    noise is very small.
 ; 03/17/2013 DGG calculate coordinates explicitly rather than using
-;    array_indices, which turns out to be slow.
+;    array_indices, which turns out to be slow.  More efficient array
+;    indexing.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -143,14 +144,14 @@ range = max(rng)
 r = findgen(2*range + 1) - range
 
 for i = 0L, npts-1L do begin 
-   n0 = range - rng[i]
-   n1 = range + rng[i]
-   x = xp[i] + round(r[n0:n1] * costheta[i]) > 0 < (nx-1)
-   y = yp[i] + round(r[n0:n1] * sintheta[i]) > 0 < (ny-1)
-   b[x, y] += 1 
+   rr = r[range-rng[i]:range+rng[i]]
+   x = xp[i] + round(rr * costheta[i]) > 0 < (nx-1)
+   y = yp[i] + round(rr * sintheta[i]) > 0 < (ny-1)
+   b[x, y]++
 endfor
 
-range = median(rng)
+if arg_present(range) then $
+   range = median(rng)
 
 return, b
 end
