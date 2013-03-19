@@ -412,6 +412,7 @@ for i = istart, nsteps-1 do begin
          labely = where(rowtot gt 0, ngood)
          nontrivial = ngood gt 0
          if nontrivial then $
+            labelx = where(coltot gt 0)
       endif else begin
 ;   or: Use simple N^2 time routine to calculate trivial bonds      
 
@@ -458,7 +459,7 @@ for i = istart, nsteps-1 do begin
          endif
 
          labely = where(rowtot gt 0, ngood)
-         nontrivial = ngood gt
+         nontrivial = ngood gt 0
          if nontrivial then $
             labelx = where(coltot gt 0)
       endelse   
