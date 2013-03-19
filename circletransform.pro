@@ -143,8 +143,8 @@ r = findgen(2*range + 1) - range
 
 for i = 0L, npts-1L do begin 
    rr = r[range-rng[i]:range+rng[i]]
-   x = xp[i] + round(rr * costheta[i]) > 0 < (nx-1)
-   y = yp[i] + round(rr * sintheta[i]) > 0 < (ny-1)
+   x = (xp[i] + round(rr * costheta[i])) > 0 < (nx-1)
+   y = (yp[i] + round(rr * sintheta[i])) > 0 < (ny-1)
    b[x, y]++
 endfor
 
