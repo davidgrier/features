@@ -50,6 +50,8 @@
 ; 12/21/2012 DGG Pass NOISE estimate to CIRCLETRANSFORM to take
 ;   advantage of new range-estimation code.
 ; 01/16/2013 DGG Use RANGE from CIRCLETRANSFORM to estimate threshold.
+; 03/19/2013 DGG Smooth result of circletransform to suppress spurious
+;   features.
 ;
 ; Copyright (c) 2012-2013 David G. Grier
 ;-
@@ -82,6 +84,8 @@ if ~isa(threshold, /number, /scalar) then begin
    threshold = round(!pi * range^2 / 4.)
    if keyword_set(deinterlace) then threshold /= 2
 endif
+
+ct = smooth(temporary(ct), range)
 
 p = fastfeature(ct, threshold, pickn = pickn, count = count) ; find peaks
 
