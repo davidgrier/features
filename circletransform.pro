@@ -72,7 +72,9 @@
 ; 02/17/2013 DGG RANGE is the median range of voting pixels, not the
 ;    mean.
 ; 03/04/2013 DGG shift by +1 rather than by +0.5.  Limit range if
-;    noise is very small
+;    noise is very small.
+; 03/17/2013 DGG calculate coordinates explicitly rather than using
+;    array_indices, which turns out to be slow.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -125,9 +127,11 @@ b = intarr(nx, ny)              ; accumulator array for the result
 
 if npts le 0 then return, b
 
-xy = array_indices(grada, w)    ; coordinates of pixels with strong gradients
-if dodeinterlace then xy[1,*] = 2.*xy[1,*] + n0
-xy += 1.                       ; to center over pixels
+xp = w mod nx                   ; coordinates of pixels with strong gradients
+yp = w / nx
+if dodeinterlace then yp = 2*yp + n0
+xp++                            ; to center over pixels
+yp++
 
 grada = grada[w]                ; gradient direction at each pixel
 dgrada = dgrada[w] / grada
@@ -136,13 +140,13 @@ sintheta = dady[w] / grada
 
 rng = round(2./tan(dgrada/2.) < nx)
 range = max(rng)
-r = findgen(2.*range + 1.) - range
+r = findgen(2*range + 1) - range
 
 for i = 0L, npts-1L do begin 
    n0 = range - rng[i]
    n1 = range + rng[i]
-   x = round(xy[0,i] + r[n0:n1] * costheta[i]) > 0 < nx-1
-   y = round(xy[1,i] + r[n0:n1] * sintheta[i]) > 0 < ny-1
+   x = xp[i] + round(r[n0:n1] * costheta[i]) > 0 < (nx-1)
+   y = yp[i] + round(r[n0:n1] * sintheta[i]) > 0 < (ny-1)
    b[x, y] += 1 
 endfor
 
