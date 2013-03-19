@@ -88,12 +88,10 @@ endif
 ct = smooth(temporary(ct), range)
 
 p = fastfeature(ct, threshold, pickn = pickn, count = count) ; find peaks
-
 if count lt 1 then begin
    message, umsg, /inf, noprint = noprint
    message, 'no features found above threshold = '+strtrim(threshold, 2), /inf, noprint = noprint
    return, -1
 endif
-
 return, p
 end

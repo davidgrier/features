@@ -75,7 +75,7 @@
 ;    noise is very small.
 ; 03/17/2013 DGG calculate coordinates explicitly rather than using
 ;    array_indices, which turns out to be slow.  More efficient array
-;    indexing.
+;    indexing.  No more need to shift pixels for alignment.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -131,8 +131,6 @@ if npts le 0 then return, b
 xp = w mod nx                   ; coordinates of pixels with strong gradients
 yp = w / nx
 if dodeinterlace then yp = 2*yp + n0
-xp++                            ; to center over pixels
-yp++
 
 grada = grada[w]                ; gradient direction at each pixel
 dgrada = dgrada[w] / grada
