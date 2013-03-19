@@ -72,7 +72,8 @@
 ; 02/17/2013 DGG Setting DEINTERLACE = 0 does not deinterlace.
 ; 02/26/2013 DGG Clean up threshold code.  Set ALL_NEIGHBORS for
 ;    label_region.
-; 03/17/2013 DGG More efficient array indexing.
+; 03/17/2013 DGG More efficient array indexing.  Simplified
+;    deinterlace code.  Simplified main loop.
 ;
 ; Copyright (c) 2004-2013 David G. Grier and David B. Ruffner
 ;-
@@ -114,17 +115,13 @@ if ~isa(threshold, /number, /scalar) then begin
    return, -1
 endif
    
-if keyword_set(deinterlace) then begin
-   dodeinterlace = 1
+dodeinterlace = keyword_set(deinterlace)
+if dodeinterlace then begin
    n0 = long(deinterlace) mod 1L
    img = image[*,n0:*:2,*]
-   a = keyword_set(dark) ? label_region(img lt threshold) : $
-       label_region(img gt threshold, /all_neighbors)
-endif else begin
-   dodeinterlace = 0
-   a = keyword_set(dark) ? label_region(image lt threshold) : $
-       label_region(image gt threshold, /all_neighbors)
-endelse
+   a = label_region(keyword_set(dark) ? img lt threshold : img gt threshold, /all_neighbors)
+endif else $
+   a = label_region(keyword_set(dark) ? image lt threshold : image gt threshold, /all_neighbors)
 
 ;;; Find centroid of each labeled region
 n = histogram(a, reverse_indices = r)
@@ -132,21 +129,18 @@ count = n_elements(n) - 1       ; do not count background as a feature
 if count le 0 then $
    return, -1
 
-f = fltarr(nd+1, count)
+f = fltarr(nd+1, count, /nozero)
 for i = 1, count do begin                             ; the background is region 0
    ndx = r[r[i]:r[i+1]-1]                             ; 1D indices of pixels in region i
+   npts = r[i+1]-r[i]
    nn = array_indices(a, ndx)                         ; nd-dimensional indices of pixels in i
-   v = transpose(rebin(a[ndx], n_elements(ndx), nd))  ; values in region i
+   v = transpose(rebin(a[ndx], npts, nd))             ; values in region i
    if dodeinterlace then begin
-      nn[1,*] = 2.*nn[1,*] + n0
-      f[0, i-1] = (n_elements(ndx) eq 1) ? nn : $     ; value-weighted centers, 0:nd-1
-                  total(nn*v, 2)/total(v, 2)
-      f[nd, i-1] = total(abs(img[ndx] - threshold))   ; integrated brightness
-   endif else begin
-      f[0, i-1] = (n_elements(ndx) eq 1) ? nn : $     ; value-weighted centers, 0:nd-1
-                  total(nn*v, 2)/total(v, 2)
+      nn[1,*] = 2.*temporary(nn[1,*]) + n0
+      f[nd, i-1] = total(abs(img[ndx] - threshold)) ; integrated brightness
+   endif else $
       f[nd, i-1] = total(abs(image[ndx] - threshold)) ; integrated brightness
-   endelse
+   f[0, i-1] = (npts eq 1) ? nn : total(nn*v, 2)/total(v, 2) ; value-weighted centers
 endfor
 
 if isa(pickn, /scalar, /number) then begin
