@@ -403,19 +403,15 @@ for i = istart, nsteps-1 do begin
             ww = where(coltot[which1[w]] eq 1, ngood)
             if ngood ne 0 then begin
                ndx = w[ww]
-               resx[ndx,ispan] = eyes[which1[ndx]]
+               resx[ndx, ispan] = eyes[which1[ndx]]
                found[which1[ndx]] = 1B
                rowtot[ndx] = 0
                coltot[which1[ndx]] = 0
             endif
          endif
          labely = where(rowtot gt 0, ngood)
-         if ngood ne 0 then begin
-            labelx = where(coltot gt 0)
-            nontrivial = 1
-         endif else $
-            nontrivial = 0
-         
+         nontrivial = ngood gt 0
+         if nontrivial then $
       endif else begin
 ;   or: Use simple N^2 time routine to calculate trivial bonds      
 
@@ -444,17 +440,17 @@ for i = istart, nsteps-1 do begin
          coltot = (ntrack gt 1) ? total(ltmax, 2) : ltmax
          which1 = intarr(n)
          for j = 0L, ntrack-1L do begin
-            mx = max(ltmax[*,j], w) ; max is faster than where
+            mx = max(ltmax[*, j], w) ; max is faster than where
             which1[wh[j]] = w
          endfor
 
          ntrk = fix(n - total(rowtot eq 0))
          w = where(rowtot eq 1, ngood)
-         if ngood ne 0 then begin
+         if ngood gt 0 then begin
             ww = where(coltot[which1[w]] eq 1, ngood)
             ndx = w[ww]
-            if ngood ne 0 then begin
-               resx[ndx,ispan] = eyes[which1[ndx]]
+            if ngood gt 0 then begin
+               resx[ndx, ispan] = eyes[which1[ndx]]
                found[which1[ndx]] = 1B
                rowtot[ndx] = 0
                coltot[which1[ndx]] = 0
@@ -462,16 +458,12 @@ for i = istart, nsteps-1 do begin
          endif
 
          labely = where(rowtot gt 0, ngood)
-         if ngood ne 0 then begin
+         nontrivial = ngood gt
+         if nontrivial then $
             labelx = where(coltot gt 0)
-            nontrivial = 1
-         endif else $
-            nontrivial = 0
-         
       endelse   
 ;   THE TRIVIAL BOND CODE ENDS         
-      if nontrivial then begin
-      
+      if nontrivial then begin      
          xdim = n_elements(labelx)
          ydim = n_elements(labely)
          
@@ -520,7 +512,7 @@ for i = istart, nsteps-1 do begin
                repeat begin
                   if (donea NE adda) then begin
                      w = where(bonds[1,*] EQ lista[donea], ngood)   
-                     if ngood NE 0 then begin
+                     if ngood gt 0 then begin
                         listb[addb:addb+ngood-1] = bonds[0,w]
                         bonds[*,w] = -(nclust+1)
                         addb += ngood
@@ -529,7 +521,7 @@ for i = istart, nsteps-1 do begin
                   endif
                   if (doneb NE addb) then begin
                      w = where(bonds[0,*] EQ listb[doneb], ngood)   
-                     if ngood NE 0 then begin
+                     if ngood gt 0 then begin
                         lista[adda:adda+ngood-1] = bonds[1,w]
                         bonds[*,w] = -(nclust+1)
                         adda += ngood

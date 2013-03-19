@@ -72,6 +72,7 @@
 ; 02/17/2013 DGG Setting DEINTERLACE = 0 does not deinterlace.
 ; 02/26/2013 DGG Clean up threshold code.  Set ALL_NEIGHBORS for
 ;    label_region.
+; 03/17/2013 DGG More efficient array indexing.
 ;
 ; Copyright (c) 2004-2013 David G. Grier and David B. Ruffner
 ;-
@@ -132,18 +133,18 @@ if count le 0 then $
    return, -1
 
 f = fltarr(nd+1, count)
-for i = 1, count do begin                            ; the background is region 0
-   ndx = r[r[i]:r[i+1]-1]                            ; 1D indices of pixels in region i
-   nn = array_indices(a, ndx)                        ; nd-dimensional indices of pixels in i
-   v = transpose(rebin(a[ndx], n_elements(ndx), nd)) ; values in region i
+for i = 1, count do begin                             ; the background is region 0
+   ndx = r[r[i]:r[i+1]-1]                             ; 1D indices of pixels in region i
+   nn = array_indices(a, ndx)                         ; nd-dimensional indices of pixels in i
+   v = transpose(rebin(a[ndx], n_elements(ndx), nd))  ; values in region i
    if dodeinterlace then begin
       nn[1,*] = 2.*nn[1,*] + n0
-      f[0:nd-1, i-1] = (n_elements(ndx) eq 1) ? nn : $ ; value-weighted centers
-                       total(nn*v, 2)/total(v, 2)
-      f[nd, i-1] = total(abs(img[ndx] - threshold)) ; integrated brightness
+      f[0, i-1] = (n_elements(ndx) eq 1) ? nn : $     ; value-weighted centers, 0:nd-1
+                  total(nn*v, 2)/total(v, 2)
+      f[nd, i-1] = total(abs(img[ndx] - threshold))   ; integrated brightness
    endif else begin
-      f[0:nd-1, i-1] = (n_elements(ndx) eq 1) ? nn : $ ; value-weighted centers
-                       total(nn*v, 2)/total(v, 2)
+      f[0, i-1] = (n_elements(ndx) eq 1) ? nn : $     ; value-weighted centers, 0:nd-1
+                  total(nn*v, 2)/total(v, 2)
       f[nd, i-1] = total(abs(image[ndx] - threshold)) ; integrated brightness
    endelse
 endfor
