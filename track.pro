@@ -278,7 +278,7 @@ notnsqrd = (sqrt(n*ngood) ge 200) && (dim lt 7)
 
 if notnsqrd then begin
 ;   construct the vertices of a 3x3x3... d-dimensional hypercube
-   cube = rebin(lindgen(1, 3^dim), dim, 3^dim)
+   cube = rebin(lindgen(1, 3^dim), dim, 3^dim, /sample)
    for j = 1, dim-1 do cube[j, *] /= 3^j
    cube mod= 3
 

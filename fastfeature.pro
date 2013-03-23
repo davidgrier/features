@@ -74,6 +74,7 @@
 ;    label_region.
 ; 03/17/2013 DGG More efficient array indexing.  Simplified
 ;    deinterlace code.  Simplified main loop.
+; 03/22/2013 DGG rebin(/sample) is more efficient.
 ;
 ; Copyright (c) 2004-2013 David G. Grier and David B. Ruffner
 ;-
@@ -134,7 +135,7 @@ for i = 1, count do begin                             ; the background is region
    ndx = r[r[i]:r[i+1]-1]                             ; 1D indices of pixels in region i
    npts = r[i+1]-r[i]
    nn = array_indices(a, ndx)                         ; nd-dimensional indices of pixels in i
-   v = transpose(rebin(a[ndx], npts, nd))             ; values in region i
+   v = transpose(rebin(a[ndx], npts, nd, /sample))    ; values in region i
    if dodeinterlace then begin
       nn[1,*] = 2.*temporary(nn[1,*]) + n0
       f[nd, i-1] = total(abs(img[ndx] - threshold)) ; integrated brightness
