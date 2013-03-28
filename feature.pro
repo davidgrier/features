@@ -127,7 +127,7 @@
 ; 06/09/2010: DGG. Set COUNT = 0 if no features are found.
 ;     Fixed bugs with parameter sanity checks.  Documentation fixes.
 ; 06/10/2010: DGG.  Added COMPILE_OPT statements
-; 03/27/2013 DGG More efficient array manipulations.
+; 03/27/2013 DGG More efficient array manipulations.  Revamped message code.
 ;
 ; Copyright (c) 2006-2010 John C. Crocker, Eric R. Dufresne,
 ;                           and David G. Grier.
@@ -205,7 +205,7 @@ function feature, a, extent, sep,    $
 COMPILE_OPT IDL2
 
 ; set flags
-report = ~keyword_set(quiet)    ; report normal output as well as errors
+quiet = keyword_set(quiet)
 field = keyword_set(field)      ; work on a field rather than a frame
 iterate = keyword_set(iterate)  ; iterate to improve centroid estimates
 
@@ -217,8 +217,7 @@ ny = sz[2]                      ; height of image
 extent = floor(extent)          ; diameter of a particle
 if (extent mod 2) eq 0 then begin
    extent++
-   if report then $
-      message, 'EXTENT must be odd.  Adding 1...', /inf
+   message, 'EXTENT must be odd.  Adding 1...', /inf, noprint = quiet
 endif
 
 if (n_params() lt 3) then $
@@ -226,8 +225,7 @@ if (n_params() lt 3) then $
 
 if sep le extent then begin
   sep = extent + 1
-  if report then $
-     message, 'SEPARATION must be greater than EXTENT: Fixing ...', /inf
+  message, 'SEPARATION must be greater than EXTENT: Fixing ...', /inf, noprint = quiet
 endif
 
 ; derived parameters
@@ -249,8 +247,7 @@ if ~keyword_set(min) then begin ; minimum acceptable pixel intensity
       min++
       val += h[min]
    endwhile
-   if report then $
-      message, "Setting MIN to "+strcompress(min), /inf
+   message, "Setting MIN to "+strcompress(min), /inf, noprint = quiet
 endif
 
 ; the array of results
@@ -264,8 +261,7 @@ b = byte(a)
 c = dilate(b, mmask, /gray)
 r = where(b eq c and b ge min, count)
 if count lt 1 then begin
-   if report then $
-      message, "No local maxima were brighter than MIN", /inf
+   message, "No local maxima were brighter than MIN", /inf, noprint = quiet
    return, res
 endif
 
@@ -279,15 +275,13 @@ good = where(x ge range and $
              y ge yrange and $
              y lt (ny-yrange), lmax)
 if lmax lt 1 then begin
-   if report then $
-      message, "All local maxima were too close to edge", /inf
+   message, "All local maxima were too close to edge", /inf, noprint = quiet
    count = 0
    return, res
 endif
 x = x[good]
 y = y[good]
-if report then $
-   message,  strcompress(lmax) + ' local maxima found.', /inf
+message, strcompress(lmax) + ' local maxima found.', /inf, noprint = quiet
 
 ; corners of regions around each local maximum
 xl = x - floor(extent/2) 
@@ -378,20 +372,18 @@ hash =  floor(res[0, *]/sep) + nx * floor(res[1, *]/sep)
 ndx = uniq(hash, sort(hash))
 count = n_elements(ndx)
 res = res[*, ndx]
-if report then $
-	message, strcompress(count)+" unique features above threshold", /inf
+message, strcompress(count)+" unique features above threshold", /inf, noprint = quiet
 
 ; select the brightest features
 if keyword_set(pickn) then begin
    order = sort(res[2, *])      ; sort by integrated brightness
-   if count lt pickn and report then $
+   if count lt pickn then $
       message, "PICKN: Ignored: Fewer than "+strtrim(pickn,2)+ $
-               " features to choose from.", /inf $
+               " features to choose from.", /inf, noprint = quiet $
     else begin
       good = order[count-pickn:*]    
       res = res[*, good]
-      if report then $
-         message, strcompress(pickn)+" features selected", /inf
+      message, strcompress(pickn)+" features selected", /inf, noprint = quiet
    endelse
 endif
 
