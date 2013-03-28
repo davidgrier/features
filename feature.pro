@@ -380,11 +380,11 @@ message, strcompress(count)+" unique features above threshold", /inf, noprint = 
 
 ; select the brightest features
 if keyword_set(pickn) then begin
-   order = sort(res[2, *])      ; sort by integrated brightness
    if count lt pickn then $
       message, "PICKN: Ignored: Fewer than "+strtrim(pickn,2)+ $
                " features to choose from.", /inf, noprint = quiet $
     else begin
+      order = sort(res[2, *])   ; sort by integrated brightness
       good = order[count-pickn:*]    
       res = res[*, good]
       message, strcompress(pickn)+" features selected", /inf, noprint = quiet
