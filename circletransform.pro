@@ -76,6 +76,7 @@
 ; 03/17/2013 DGG calculate coordinates explicitly rather than using
 ;    array_indices, which turns out to be slow.  More efficient array
 ;    indexing.  No more need to shift pixels for alignment.
+; 03/27/2013 DGG eliminate repetitive operations in loops.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -141,10 +142,12 @@ rng = round(2./tan(dgrada/2.)) < nx
 range = max(rng)
 r = findgen(2*range + 1) - range
 
+nx--
+ny--
 for i = 0L, npts-1L do begin 
    rr = r[range-rng[i]:range+rng[i]]
-   x = (xp[i] + round(rr * costheta[i])) > 0 < (nx-1)
-   y = (yp[i] + round(rr * sintheta[i])) > 0 < (ny-1)
+   x = (xp[i] + round(rr * costheta[i])) > 0 < nx
+   y = (yp[i] + round(rr * sintheta[i])) > 0 < ny
    b[x, y]++
 endfor
 
