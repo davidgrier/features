@@ -127,6 +127,7 @@
 ; 06/09/2010: DGG. Set COUNT = 0 if no features are found.
 ;     Fixed bugs with parameter sanity checks.  Documentation fixes.
 ; 06/10/2010: DGG.  Added COMPILE_OPT statements
+; 03/27/2013 DGG More efficient array manipulations.
 ;
 ; Copyright (c) 2006-2010 John C. Crocker, Eric R. Dufresne,
 ;                           and David G. Grier.
@@ -137,15 +138,16 @@
 ;	RSQD: produce a parabolic mask
 ;
 function rsqd, w, h
+
 COMPILE_OPT IDL2, HIDDEN
 
 if n_params() eq 1 then h = w
 xc = float(w-1) / 2.
 yc = float(h-1) / 2.
 x2 = (findgen(w) - xc)^2
-y2 = (findgen(h) - yc)^2
+y2 = (findgen(1, h) - yc)^2
 
-return,  x2 # replicate(1., h) + replicate(1., w) # y2
+return,  rebin(x2, w, h, /sample) + rebin(y2, w, h, /sample)
 end
 
 ;;;
