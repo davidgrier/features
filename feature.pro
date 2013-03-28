@@ -191,11 +191,16 @@ end
 ;
 ;	FEATURE:
 ;
-function feature, a, extent, sep,  $
-                  min=min, masscut=masscut, pickn=pickn, $
-                  field=field, quiet=quiet, $
-                  iterate=iterate, maxits=maxits, $
-                  lmax=lmax, count=count
+function feature, a, extent, sep,    $
+                  min     = min,     $
+                  masscut = masscut, $
+                  pickn   = pickn,   $
+                  field   = field,   $
+                  quiet   = quiet,   $
+                  iterate = iterate, $
+                  maxits  = maxits,  $
+                  lmax    = lmax,    $
+                  count   = count
 
 COMPILE_OPT IDL2
 
