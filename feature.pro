@@ -244,8 +244,8 @@ if n_elements(maxits) ne 1 then maxits = 10 ; maximum number of iterations
 if n_elements(masscut) ne 1 then masscut = 0 ; minimum acceptable integrated brightness
 
 if ~keyword_set(min) then begin ; minimum acceptable pixel intensity
-   h = histogram( a )
-   goal = 0.64 * total( h )
+   h = histogram(a)
+   goal = 0.64 * total(h)
    min = 0
    val = h[min]
    while val le goal do begin
@@ -264,7 +264,7 @@ if field then $
    mmask = fieldof(mmask, /odd)
 b = byte(a)
 c = dilate(b, mmask, /gray)
-r = where(b eq c and b ge min, count)
+r = where((b eq c) && (b ge min), count)
 if count lt 1 then begin
    message, "No local maxima were brighter than MIN", /inf, noprint = quiet
    return, res
@@ -275,10 +275,10 @@ x  = float(r mod nx)
 y  = float(floor(r / nx)) 
 
 ; some local maxima will be too close to the edge -- eliminate them
-good = where(x ge range and $
-             x lt (nx-range) and $
-             y ge yrange and $
-             y lt (ny-yrange), lmax)
+good = where((x ge range) && $
+             (x lt (nx-range)) && $
+             (y ge yrange) && $
+             (y lt (ny-yrange)), lmax)
 if lmax lt 1 then begin
    message, "All local maxima were too close to edge", /inf, noprint = quiet
    count = 0
@@ -295,11 +295,11 @@ yl = field ? y - floor(extent/4) : y - floor(extent/2)
 yh = field ? yl + floor(extent/2) - 1 : yl + extent - 1
 
 ; set up some masks
-rsq = rsqd( extent )
+rsq = rsqd(extent)
 mask = rsq le radius^2
 xmask = findgen(extent, extent) mod extent
 xmask -= (extent-1)/2.                  ; center mask at center!
-ymask = transpose( xmask )
+ymask = transpose(xmask)
 xmask *= mask
 ymask *= mask
 rmask = rsq * mask + 1./6.
@@ -320,7 +320,7 @@ for i = 0L, lmax-1L do begin
    xli = xl[i] & xhi = xh[i]
    yli = yl[i] & yhi = yh[i]
 
-   suba = a[xli:xhi,yli:yhi]    ; sub-image around candidate feature
+   suba = a[xli:xhi, yli:yhi]   ; sub-image around candidate feature
    m = total(suba * mask)       ; integrated brightness
 
    if m lt masscut then continue ; too small: m = 0 and rg = 0 at loop's end
@@ -339,14 +339,14 @@ for i = 0L, lmax-1L do begin
              shifted = 1
              dx = round(xc)
              xli = (xli + dx) > 0
-             xhi = (xhi + dx) <  (nx-1) >  (xli+1)
+             xhi = (xhi + dx) <  (nx-1) > (xli+1)
              xi = (xi + dx) > xli <  xhi
           endif
           if abs(yc) gt 0.6 then begin
              shifted = 1
              dy = round(yc)
              yli = (yli + dy) > 0
-             yhi = (yhi + dy) <  (ny-1) >  (yli+1)
+             yhi = (yhi + dy) <  (ny-1) > (yli+1)
              yi = (yi + dy) > yli <  yhi
           endif
           if shifted then begin     
@@ -358,7 +358,6 @@ for i = 0L, lmax-1L do begin
           its++
        endrep until not shifted or (its eq maxits)
     endif
-
 
     rg = total( suba * rmask ) / m ; radius of gyration
     res[*, i] = [xi+xc, (yi+yc)*yscale, m, rg]
