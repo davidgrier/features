@@ -127,9 +127,10 @@
 ; 06/09/2010: DGG. Set COUNT = 0 if no features are found.
 ;     Fixed bugs with parameter sanity checks.  Documentation fixes.
 ; 06/10/2010: DGG.  Added COMPILE_OPT statements
-; 03/27/2013 DGG More efficient array manipulations.  Revamped message code.
+; 03/27/2013 DGG More efficient array manipulations.  Revamped message
+;   code.  Added usage message.
 ;
-; Copyright (c) 2006-2010 John C. Crocker, Eric R. Dufresne,
+; Copyright (c) 2006-2013 John C. Crocker, Eric R. Dufresne,
 ;                           and David G. Grier.
 ;-
 
@@ -204,6 +205,8 @@ function feature, a, extent, sep,    $
 
 COMPILE_OPT IDL2
 
+umsg = 'USAGE: p = feature(image, extent, separation)'
+
 ; set flags
 quiet = keyword_set(quiet)
 field = keyword_set(field)      ; work on a field rather than a frame
@@ -217,6 +220,7 @@ ny = sz[2]                      ; height of image
 extent = floor(extent)          ; diameter of a particle
 if (extent mod 2) eq 0 then begin
    extent++
+   message, umsg, /inf, noprint = quiet
    message, 'EXTENT must be odd.  Adding 1...', /inf, noprint = quiet
 endif
 
@@ -225,6 +229,7 @@ if (n_params() lt 3) then $
 
 if sep le extent then begin
   sep = extent + 1
+  message, umsg, /inf, noprint = quiet
   message, 'SEPARATION must be greater than EXTENT: Fixing ...', /inf, noprint = quiet
 endif
 
