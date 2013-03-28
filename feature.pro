@@ -156,12 +156,13 @@ end
 ;               fractional pixel amount using bilinear interpolation.
 ;
 function fracshift, im, shiftx, shifty
+
 COMPILE_OPT IDL2, HIDDEN
 
-if n_elements( im ) eq 1 then return, im
+if n_elements(im) eq 1 then return, im
 
-ipx = floor( shiftx )           ; integer part of x shift
-ipy = floor( shifty )           ; integer part of y shift
+ipx = floor(shiftx)             ; integer part of x shift
+ipy = floor(shifty)             ; integer part of y shift
 fpx = shiftx - ipx              ; fractional part of x shift
 fpy = shifty - ipy              ; fractional part of y shift
 if fpx lt 0 then begin
@@ -173,15 +174,15 @@ endif
 
 image = im                      ; preserve input data: use local copy
 
-imagex  = shift( image, ipx+1, ipy   )
-imagey  = shift( image, ipx  , ipy+1 )
-imagexy = shift( image, ipx+1, ipy+1 )
-image   = shift( image, ipx  , ipy   )
+imagex  = shift(image, ipx+1, ipy  )
+imagey  = shift(image, ipx  , ipy+1)
+imagexy = shift(image, ipx+1, ipy+1)
+image   = shift(image, ipx  , ipy  )
 
-res   = ( (1. - fpx) * (1. - fpy) * image   ) + $
-	( (     fpx) * (1. - fpy) * imagex  ) + $
-	( (1. - fpx) * (     fpy) * imagey  ) + $
-	( (     fpx) * (     fpy) * imagexy ) 
+res = ((1. - fpx) * (1. - fpy) * image  ) + $
+      ((     fpx) * (1. - fpy) * imagex ) + $
+      ((1. - fpx) * (     fpy) * imagey ) + $
+      ((     fpx) * (     fpy) * imagexy) 
 	
 return,res	
 end
