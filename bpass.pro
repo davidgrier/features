@@ -32,13 +32,15 @@
 ; 09/01/1999 DGG. Added EDGE_TRUNCATE to save a little more data.
 ; 09/10/2010 David G. Grier, New York University.  Added COMPILE_OPT
 ;    and revised documentation.
+; 03/27/2013 DGG Code cleanup and modernization.
 ;
-; Copyright 1993-2010 David G. Grier and John C. Crocker
+; Copyright (c) 1993-2013 David G. Grier and John C. Crocker
 ;-
 function bpass, image, lshort, llong, $
-                field = field, noclip = noclip
+                field = field, $
+                noclip = noclip
+
 COMPILE_OPT IDL2
-;on_error, 2				; go to caller on error
 
 b = float(lshort)
 w = round(llong > (2. * b))
@@ -50,17 +52,14 @@ gx = exp(-r^2) / (2. * b * sqrt(!pi))
 gy = transpose(gx)
 
 ; Boxcar average kernel: calculates background
-bx = fltarr(N) + 1./N
+bx = replicate(1./N, N)
 by = transpose(bx)
 
 if keyword_set(field) then begin
-   if N mod 4 eq 1 then $
-      ndx = 2*indgen(w+1)$
-   else $
-      ndx = 1 + 2*indgen(w)
-   gy = 2. * gy(ndx)           ; fixes normalization
+   ndx = (N mod 4 eq 1) ? 2*indgen(w+1) : 1 + 2*indgen(w)
+   gy = 2. * gy[ndx]           ; fixes normalization
    nn =  n_elements(ndx)
-   by = fltarr(nn) + 1./nn
+   by = replicate(1./nn, nn)
 endif
 
 res = float(image)
@@ -73,23 +72,6 @@ res = convol(temporary(res), bx, /edge_truncate)
 res = convol(temporary(res), by, /edge_truncate)
 res = g - temporary(res)
 
-if keyword_set(noclip) then $
-   return, res $
-else $
-   return, res > 0
+return, keyword_set(noclip) ? res : res > 0
 
 end
-
-;*********** end of bpass.pro
-
-
-
-
-
-
-
-
-
-
-
-
