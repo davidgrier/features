@@ -264,7 +264,7 @@ mmask = rsqd(sep) lt range^2
 if field then mmask = mmask[*, 1:*:2] ; odd field by default
 b = byte(a)
 c = dilate(b, mmask, /gray)
-r = where((b eq c) && (b ge min), count)
+r = where((b eq c) and (b ge min), count)
 if count lt 1 then begin
    message, "No local maxima were brighter than MIN", /inf, noprint = quiet
    return, res
@@ -275,8 +275,8 @@ x  = float(r mod nx)
 y  = float(floor(r / nx)) 
 
 ; some local maxima will be too close to the edge -- eliminate them
-good = where((x ge range) && (x lt (nx-range)) && $
-             (y ge yrange) && (y lt (ny-yrange)), lmax)
+good = where((x ge range) and (x lt (nx-range)) and $
+             (y ge yrange) and (y lt (ny-yrange)), lmax)
 if lmax lt 1 then begin
    message, "All local maxima were too close to edge", /inf, noprint = quiet
    count = 0
