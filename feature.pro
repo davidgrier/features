@@ -301,7 +301,7 @@ if field then begin
    mask = mask[*, 1:*:2]
    xmask = xmask[*, 1:*:2]
    ymask = ymask[*, 1:*:2]
-   rmask = rmask[*, 1:*:2]
+   rsq = rsq[*, 1:*:2]
 endif
 xmask *= mask
 ymask *= mask
