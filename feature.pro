@@ -128,7 +128,8 @@
 ;     Fixed bugs with parameter sanity checks.  Documentation fixes.
 ; 06/10/2010: DGG.  Added COMPILE_OPT statements
 ; 03/27/2013 DGG More efficient array manipulations.  Revamped message
-;   code.  Added usage message.
+;   code.  Added usage message.  Remove calls to FIELDOF in favor of
+;   array indexing.
 ;
 ; Copyright (c) 2006-2013 John C. Crocker, Eric R. Dufresne,
 ;                           and David G. Grier.
@@ -252,7 +253,7 @@ if ~keyword_set(min) then begin ; minimum acceptable pixel intensity
       min++
       val += h[min]
    endwhile
-   message, "Setting MIN to "+strcompress(min), /inf, noprint = quiet
+   message, "Setting MIN to " + strcompress(min), /inf, noprint = quiet
 endif
 
 ; the array of results
@@ -260,8 +261,7 @@ res = fltarr(4)
 
 ; find local maxima
 mmask = rsqd(sep) lt range^2
-if field then $
-   mmask = fieldof(mmask, /odd)
+if field then mmask = mmask[*, 1:*:2] ; odd field by default
 b = byte(a)
 c = dilate(b, mmask, /gray)
 r = where((b eq c) && (b ge min), count)
@@ -275,10 +275,8 @@ x  = float(r mod nx)
 y  = float(floor(r / nx)) 
 
 ; some local maxima will be too close to the edge -- eliminate them
-good = where((x ge range) && $
-             (x lt (nx-range)) && $
-             (y ge yrange) && $
-             (y lt (ny-yrange)), lmax)
+good = where((x ge range) && (x lt (nx-range)) && $
+             (y ge yrange) && (y lt (ny-yrange)), lmax)
 if lmax lt 1 then begin
    message, "All local maxima were too close to edge", /inf, noprint = quiet
    count = 0
@@ -291,26 +289,23 @@ message, strcompress(lmax) + ' local maxima found.', /inf, noprint = quiet
 ; corners of regions around each local maximum
 xl = x - floor(extent/2) 
 xh = xl + extent - 1
-yl = field ? y - floor(extent/4) : y - floor(extent/2) 
-yh = field ? yl + floor(extent/2) - 1 : yl + extent - 1
+yl = (field) ? y - floor(extent/4) : y - floor(extent/2) 
+yh = (field) ? yl + floor(extent/2) - 1 : yl + extent - 1
 
 ; set up some masks
 rsq = rsqd(extent)
 mask = rsq le radius^2
-xmask = findgen(extent, extent) mod extent
-xmask -= (extent-1)/2.                  ; center mask at center!
+xmask = rebin(findgen(extent) - (extent - 1)/2., extent, extent, /sample)
 ymask = transpose(xmask)
+if field then begin
+   mask = mask[*, 1:*:2]
+   xmask = xmask[*, 1:*:2]
+   ymask = ymask[*, 1:*:2]
+   rmask = rmask[*, 1:*:2]
+endif
 xmask *= mask
 ymask *= mask
 rmask = rsq * mask + 1./6.
-
-; extract fields of the masks for field-based analysis
-if field then begin
-   mask = fieldof(mask, /odd)
-   xmask = fieldof(xmask, /odd)
-   ymask = fieldof(ymask, /odd)
-   rmask = fieldof(rmask, /odd)
-endif
 
 res = fltarr(4, lmax, /nozero)
 
@@ -381,13 +376,13 @@ message, strcompress(count)+" unique features above threshold", /inf, noprint = 
 ; select the brightest features
 if keyword_set(pickn) then begin
    if count lt pickn then $
-      message, "PICKN: Ignored: Fewer than "+strtrim(pickn,2)+ $
+      message, "PICKN: Ignored: Fewer than " + strtrim(pickn,2) + $
                " features to choose from.", /inf, noprint = quiet $
     else begin
       order = sort(res[2, *])   ; sort by integrated brightness
       good = order[count-pickn:*]    
       res = res[*, good]
-      message, strcompress(pickn)+" features selected", /inf, noprint = quiet
+      message, strcompress(pickn) + " features selected", /inf, noprint = quiet
    endelse
 endif
 
