@@ -135,9 +135,9 @@ for i = 1, count do begin                            ; the background is region 
    nn = array_indices(img, ndx)                      ; nd-dimensional indices of pixels in i
    if dodeinterlace then $
       nn[1,*] = dy*temporary(nn[1,*]) + y0
-   v = transpose(rebin(img[ndx], n[i], nd, /sample))         ; values in region i
-   f[0, i-1] = (n[i] eq 1) ? nn : total(nn*v, 2)/total(v, 2) ; value-weighted centers
-   f[nd, i-1] = total(img[ndx])                              ; integrated brightness
+   v = transpose(rebin(img[ndx], n[i], nd, /sample))        ; values in region i
+   f[0,i-1] = (n[i] eq 1) ? nn : total(nn*v, 2)/total(v, 2) ; value-weighted centers
+   f[nd,i-1] = total(img[ndx])                              ; integrated brightness
 endfor
 
 if isa(pickn, /scalar, /number) then begin
