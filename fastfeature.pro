@@ -21,6 +21,9 @@
 ;        Default: objects are assumed to be brighter than
 ;        background.
 ;
+;    npixels: if set, return number of pixels in each region
+;        Default: return integrated brightness relative to threshold.
+;
 ;    center: if set, return coordinates relative to the center of
 ;        the field of view.
 ;        Default: origin is set at the lower left corner.
@@ -74,7 +77,7 @@
 ; 03/17/2013 DGG More efficient array indexing.  Simplified
 ;    deinterlace code.  Simplified main loop.
 ; 03/22/2013 DGG rebin(/sample) is more efficient.
-; 05/12/2013 DGG fix brightness weighting.
+; 05/12/2013 DGG fix brightness weighting.  Added NPIXELS.
 ;
 ; Copyright (c) 2004-2013 David G. Grier and David B. Ruffner
 ;-
@@ -84,7 +87,8 @@ function fastfeature, image, threshold, $
                       dark = dark, $
                       pickn = pickn, $
                       count = count, $
-                      deinterlace = deinterlace
+                      deinterlace = deinterlace, $
+                      npixels = npixels
 
 COMPILE_OPT IDL2
 
@@ -117,6 +121,7 @@ if ~isa(threshold, /number, /scalar) then begin
 endif
    
 dodeinterlace = keyword_set(deinterlace)
+countpixels = keyword_set(npixels)
 y0 = (dodeinterlace) ? long(deinterlace) mod 1L : 0
 dy = (dodeinterlace) ? 2 : 1
 img = keyword_set(dark) ? threshold - image[*, y0:*:dy, *] : $
@@ -137,7 +142,7 @@ for i = 1, count do begin                            ; the background is region 
       nn[1,*] = dy*temporary(nn[1,*]) + y0
    v = transpose(rebin(img[ndx], n[i], nd, /sample))        ; values in region i
    f[0,i-1] = (n[i] eq 1) ? nn : total(nn*v, 2)/total(v, 2) ; value-weighted centers
-   f[nd,i-1] = total(img[ndx])                              ; integrated brightness
+   f[nd,i-1] = (countpixels) ? n[i] : total(img[ndx])       ; integrated brightness
 endfor
 
 if isa(pickn, /scalar, /number) then begin
