@@ -52,7 +52,7 @@
 ; 01/16/2013 DGG Use RANGE from CIRCLETRANSFORM to estimate threshold.
 ; 03/19/2013 DGG Smooth result of circletransform to suppress spurious
 ;   features.
-; 05/12/2013 DGG Only keep features with 8 pixels or more.  No need to smooth.
+; 05/12/2013 DGG Only keep features with 9 pixels or more.  No need to smooth.
 ;
 ; Copyright (c) 2012-2013 David G. Grier
 ;-
@@ -92,7 +92,7 @@ if count lt 1 then begin
    message, 'no features found above threshold = '+strtrim(threshold, 2), /inf, noprint = noprint
    return, -1
 endif
-w = where(p[2, *] ge 8, count)
+w = where(p[2, *] ge 9, count)
 if count lt 1 then begin
    message, umsg, /inf, noprint = noprint
    message, 'no 8-pixel features found above threshold = '+strtrim(threshold, 2), /inf, $
