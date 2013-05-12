@@ -237,8 +237,8 @@ endif
 ; derived parameters
 radius = float(extent)/2.       ; estimated particle radius
 range = floor(sep/2)            ; range over which to search for neighboring features
-yrange = field ? range/2. : range
-yscale = field ? 2. : 1.
+yrange = (field) ? range/2. : range
+yscale = (field) ? 2. : 1.
 
 ; numerical options
 if n_elements(maxits) ne 1 then maxits = 10 ; maximum number of iterations
@@ -345,7 +345,7 @@ for i = 0L, lmax-1L do begin
              yi = (yi + dy) > yli <  yhi
           endif
           if shifted then begin     
-             suba = a[xli:xhi,yli:yhi]
+             suba = a[xli:xhi, yli:yhi]
              m = total(suba * mask)
              xc = total(suba * xmask) / m
              yc = total(suba * ymask) / (m * yscale)
@@ -354,7 +354,7 @@ for i = 0L, lmax-1L do begin
        endrep until not shifted or (its eq maxits)
     endif
 
-    rg = total( suba * rmask ) / m ; radius of gyration
+    rg = total(suba * rmask) / m ; radius of gyration
     res[*, i] = [xi+xc, (yi+yc)*yscale, m, rg]
 endfor
 
@@ -371,7 +371,7 @@ hash =  floor(res[0, *]/sep) + nx * floor(res[1, *]/sep)
 ndx = uniq(hash, sort(hash))
 count = n_elements(ndx)
 res = res[*, ndx]
-message, strcompress(count)+" unique features above threshold", /inf, noprint = quiet
+message, strcompress(count) + " unique features above threshold", /inf, noprint = quiet
 
 ; select the brightest features
 if keyword_set(pickn) then begin

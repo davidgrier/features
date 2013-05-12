@@ -37,8 +37,7 @@
 ; OUTPUTS:
 ;    f: [nd+1,nobjects] array of located features.
 ;        f[0:nd-1,*]: position in nd dimensions
-;        f[nd,*]: integrated brightness of the object, relative to
-;                threshold.
+;        f[nd,*]: integrated brightness of the feature relative to threshold
 ;
 ; RESTRICTIONS:
 ;    Images should be two dimensional with real-valued pixels.
@@ -75,6 +74,7 @@
 ; 03/17/2013 DGG More efficient array indexing.  Simplified
 ;    deinterlace code.  Simplified main loop.
 ; 03/22/2013 DGG rebin(/sample) is more efficient.
+; 05/12/2013 DGG fix brightness weighting.
 ;
 ; Copyright (c) 2004-2013 David G. Grier and David B. Ruffner
 ;-
@@ -117,31 +117,27 @@ if ~isa(threshold, /number, /scalar) then begin
 endif
    
 dodeinterlace = keyword_set(deinterlace)
-if dodeinterlace then begin
-   n0 = long(deinterlace) mod 1L
-   img = image[*,n0:*:2,*]
-   a = label_region(keyword_set(dark) ? img lt threshold : img gt threshold, /all_neighbors)
-endif else $
-   a = label_region(keyword_set(dark) ? image lt threshold : image gt threshold, /all_neighbors)
+y0 = (dodeinterlace) ? long(deinterlace) mod 1L : 0
+dy = (dodeinterlace) ? 2 : 1
+img = keyword_set(dark) ? threshold - image[*, y0:*:dy, *] : $
+                          image[*, y0:*:dy, *] - threshold
+reg = label_region(img gt 0, /all_neighbors)
 
 ;;; Find centroid of each labeled region
-n = histogram(a, reverse_indices = r)
+n = histogram(reg, reverse_indices = r)
 count = n_elements(n) - 1       ; do not count background as a feature
 if count le 0 then $
    return, -1
 
 f = fltarr(nd+1, count, /nozero)
-for i = 1, count do begin                             ; the background is region 0
-   ndx = r[r[i]:r[i+1]-1]                             ; 1D indices of pixels in region i
-   npts = r[i+1]-r[i]
-   nn = array_indices(a, ndx)                         ; nd-dimensional indices of pixels in i
-   v = transpose(rebin(a[ndx], npts, nd, /sample))    ; values in region i
-   if dodeinterlace then begin
-      nn[1,*] = 2.*temporary(nn[1,*]) + n0
-      f[nd, i-1] = total(abs(img[ndx] - threshold)) ; integrated brightness
-   endif else $
-      f[nd, i-1] = total(abs(image[ndx] - threshold)) ; integrated brightness
-   f[0, i-1] = (npts eq 1) ? nn : total(nn*v, 2)/total(v, 2) ; value-weighted centers
+for i = 1, count do begin                            ; the background is region 0
+   ndx = r[r[i]:r[i+1]-1]                            ; 1D indices of pixels in region i
+   nn = array_indices(img, ndx)                      ; nd-dimensional indices of pixels in i
+   if dodeinterlace then $
+      nn[1,*] = dy*temporary(nn[1,*]) + y0
+   v = transpose(rebin(img[ndx], n[i], nd, /sample))         ; values in region i
+   f[0, i-1] = (n[i] eq 1) ? nn : total(nn*v, 2)/total(v, 2) ; value-weighted centers
+   f[nd, i-1] = total(img[ndx])                              ; integrated brightness
 endfor
 
 if isa(pickn, /scalar, /number) then begin
