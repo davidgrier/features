@@ -77,6 +77,7 @@
 ;    array_indices, which turns out to be slow.  More efficient array
 ;    indexing.  No more need to shift pixels for alignment.
 ; 03/27/2013 DGG eliminate repetitive operations in loops.
+; 05/13/2013 DGG suppress borders, which are over-counted.
 ;
 ; Copyright (c) 2008-2013 David G. Grier
 ;
@@ -150,6 +151,12 @@ for i = 0L, npts-1L do begin
    y = (yp[i] + round(rr * sintheta[i])) > 0 < ny
    b[x, y]++
 endfor
+
+; borders are over-counted because of > and <
+b[*, 0] = 0
+b[0, *] = 0
+b[-1, 0] = 0
+b[0, -1] = 0
 
 if arg_present(range) then $
    range = median(rng)
