@@ -130,6 +130,8 @@
 ; 03/27/2013 DGG More efficient array manipulations.  Revamped message
 ;   code.  Added usage message.  Remove calls to FIELDOF in favor of
 ;   array indexing.
+; 07/29/2013 DGG Use sg_lmax to locate local maxima more quickly than
+;   dilate algorithm.
 ;
 ; Copyright (c) 2006-2013 John C. Crocker, Eric R. Dufresne,
 ;                           and David G. Grier.
@@ -260,19 +262,22 @@ endif
 res = fltarr(4)
 
 ; find local maxima
-mmask = rsqd(sep) lt range^2
-if field then mmask = mmask[*, 1:*:2] ; odd field by default
-b = byte(a)
-c = dilate(b, mmask, /gray)
-r = where((b eq c) and (b ge min), count)
-if count lt 1 then begin
-   message, "No local maxima were brighter than MIN", /inf, noprint = quiet
-   return, res
-endif
+;mmask = rsqd(sep) lt range^2
+;if field then mmask = mmask[*, 1:*:2] ; odd field by default
+;b = byte(a)
+;c = dilate(b, mmask, /gray)
+;r = where((b eq c) and (b ge min), count)
+;if count lt 1 then begin
+;   message, "No local maxima were brighter than MIN", /inf, noprint = quiet
+;   return, res
+;endif
 
 ; local maxima provide initial estimates for particle positions
-x  = float(r mod nx)
-y  = float(floor(r / nx)) 
+;x  = float(r mod nx)
+;y  = float(floor(r / nx)) 
+r = sg_lmax(a, extent, sep)
+x = r[0, *]
+y = r[1, *]
 
 ; some local maxima will be too close to the edge -- eliminate them
 good = where((x ge range) and (x lt (nx-range)) and $
