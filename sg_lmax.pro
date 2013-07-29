@@ -44,9 +44,9 @@ min = isa(min, /scalar, /number) ? float(min) : 0.
 order = 5
 sx = savgol(extent, extent, 0, order)
 kx = savgol(separation, separation, 1, order)
-if field then begin
+if keyword_set(field) then begin
    sy = transpose(savgol(extent/2, extent/2, 0, order))
-   ky = transpose(savgol(separation/2. separation/2,  1,  order)
+   ky = transpose(savgol(separation/2, separation/2,  1,  order))
 endif else begin
    sy = transpose(sx)
    ky = transpose(kx)
