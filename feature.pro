@@ -1,4 +1,3 @@
-;+
 ; NAME:
 ;    Feature	
 ;
@@ -275,7 +274,7 @@ res = fltarr(4)
 ; local maxima provide initial estimates for particle positions
 ;x  = float(r mod nx)
 ;y  = float(floor(r / nx)) 
-r = sg_lmax(a, extent, sep)
+r = sg_lmax(a, sep, sep+2, min=min, field=field)
 x = r[0, *]
 y = r[1, *]
 
