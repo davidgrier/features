@@ -21,6 +21,7 @@ in images before attempting feature identification.
 features suitable for tracking with CG algorithms.
     * **ctfeature**: Uses circletransform and fastfeature to identify and characterize
 ring-like features in an image.
+    * **sg_lmax**: Locate local maxima in an image using Savitzky-Golay filters.
 
 ### References
 1. J. C. Crocker and D. G. Grier, "Methods of digital video microscopy for colloidal studies,"
