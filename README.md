@@ -14,14 +14,16 @@ The code in **features** is licensed under the GPLv3.
     * **bpass**: Spatial bandpass filter for minimizing noise and background variations
 in images before attempting feature identification.
     * **feature**: Find and characterize circular features within an image.
+NOTE: the updated local-maximum detection algorithm may require revisions
+to existing particle-tracking scripts.
     * **fastfeature**: Thresholding algorithm for identifying features in an image.
     * **track**: Link features in consecutive images into time-resolved trajectories.
+    * **sg_lmax**: Locate local maxima in an image using Savitzky-Golay filters.
 2. **Feature Tracking Based on the Circletransform Algorithm**
     * **circletransform**: Transform ring-like features in an image into simply peaked
 features suitable for tracking with CG algorithms.
     * **ctfeature**: Uses circletransform and fastfeature to identify and characterize
 ring-like features in an image.
-    * **sg_lmax**: Locate local maxima in an image using Savitzky-Golay filters.
 
 ### References
 1. J. C. Crocker and D. G. Grier, "Methods of digital video microscopy for colloidal studies,"
