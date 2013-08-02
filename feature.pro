@@ -261,19 +261,6 @@ endif
 res = fltarr(4)
 
 ; find local maxima
-;mmask = rsqd(sep) lt range^2
-;if field then mmask = mmask[*, 1:*:2] ; odd field by default
-;b = byte(a)
-;c = dilate(b, mmask, /gray)
-;r = where((b eq c) and (b ge min), count)
-;if count lt 1 then begin
-;   message, "No local maxima were brighter than MIN", /inf, noprint = quiet
-;   return, res
-;endif
-
-; local maxima provide initial estimates for particle positions
-;x  = float(r mod nx)
-;y  = float(floor(r / nx)) 
 r = sg_lmax(a, sep, sep+2, min=min, field=field)
 x = r[0, *]
 y = r[1, *]
