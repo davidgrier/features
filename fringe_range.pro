@@ -38,7 +38,7 @@
 ; Copyright (c) 2013 David G. Grier
 ;-
 
-function fringe_range, a_, rp, $
+function fringe_range, a, rp, $
                        nfringes = nfringes, $
                        deinterlace = deinterlace
 
@@ -51,16 +51,16 @@ if n_params() ne 2 then begin
    return, -1
 endif
 
-if ~isa(a_, /number, /array) then begin
+if ~isa(a, /number, /array) then begin
    message, umsg, /inf
    return, -1
 endif
-if size(a_, /n_dimensions) ne 2 then begin
+if size(a, /n_dimensions) ne 2 then begin
    message, umsg, /inf
    message, 'IMAGE must be a two-dimensional numeric array', /inf
    return, -1
 endif
-sz = size(a_, /dimensions)
+sz = size(a, /dimensions)
 nx = sz[0]
 ny = sz[1]
 
@@ -78,13 +78,6 @@ endif
 nfeatures = (sz[0] eq 2) ? sz[2] : 1
 
 nfringes = (isa(nfringes, /scalar, /number)) ? long(nfringes) : 20
-
-dodeinterlace = isa(deinterlace, /scalar, /number) ? deinterlace gt 0 : 0
-if dodeinterlace then begin
-   n0 = deinterlace mod 2
-   a = float(a_[*, n0:*:2])
-endif else $
-   a = float(a_)
 
 rad = intarr(nfeatures)         ; the answer
 
