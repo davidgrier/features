@@ -33,6 +33,7 @@
 ;
 ; MODIFICATION HISTORY:
 ; 08/05/2013 Written by David G. Grier, New York University.
+; 08/06/2013 Skip cases with no extrema.
 ;
 ; Copyright (c) 2013 David G. Grier
 ;-
@@ -90,9 +91,9 @@ rad = intarr(nfeatures)         ; the answer
 for ndx = 0, nfeatures - 1 do begin
    rc = rp[0:1, ndx]
    aa = aziavg(a, center = rc, deinterlace = deinterlace)
-   aa[0:1] = aa[2]
-   rn = extrema(aa)
-   n = nfringes < (n_elements(rn) - 1)
+   rn = extrema(aa, count = count)
+   if count le 0 then continue
+   n = nfringes < (count - 1)
    rad[ndx] = rn[n]
 endfor
 
