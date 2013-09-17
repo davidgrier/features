@@ -106,8 +106,6 @@ sz = size(a_, /dimensions)
 nx = sz[0]
 ny = sz[1]
 
-if ~isa(range, /scalar, /number) then range = 100
-
 dodeinterlace = isa(deinterlace, /scalar, /number) ? deinterlace gt 0 : 0
 if dodeinterlace then begin
    n0 = deinterlace mod 2
