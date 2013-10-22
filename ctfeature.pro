@@ -18,8 +18,11 @@
 ;    noise: estimate for additive noise in pixel values
 ;        Default: set by CIRCLETRANSFORM
 ;
+;    snr: threshold signal-to-noise ratio for identifying a feature.
+;        Default: 10.
+;
 ;    threshold: threshold for detecting features
-;        Default: estimated from range computed by CIRCLETRANSFORM. 
+;        Default: estimated from SNR and range computed by CIRCLETRANSFORM. 
 ;
 ;    pickn: number of features to seek, brightest first
 ;        Default: all
@@ -52,12 +55,16 @@
 ; 01/16/2013 DGG Use RANGE from CIRCLETRANSFORM to estimate threshold.
 ; 03/19/2013 DGG Smooth result of circletransform to suppress spurious
 ;   features.
-; 05/12/2013 DGG Only keep features with 9 pixels or more.  No need to smooth.
+; 05/12/2013 DGG Only keep features with 9 pixels or more.  No need to
+;   smooth.
+; 10/22/2013 DGG Default threshold is SNR above random hits at range
+;   provided by circletransform.  Added SNR keyword.
 ;
 ; Copyright (c) 2012-2013 David G. Grier
 ;-
 function ctfeature, a, $
                     noise = noise, $
+                    snr = snr, $
                     threshold = threshold, $
                     pickn = pickn, $
                     count = count, $
@@ -80,12 +87,15 @@ noprint = keyword_set(quiet)
 ;; transform ring-like patterns into spots
 ct = circletransform(a, noise = noise, range = range, deinterlace = deinterlace)
 
-;; centers of spots are estimates for particle centers: (xp, yp)
+;; estimate threshold for features relative to random hits
+if ~isa(snr, /number, /scalar) then $
+   snr = 10.
 if ~isa(threshold, /number, /scalar) then begin
-   threshold = round(!pi * range^2 / 4.)
+   threshold = snr*range
    if keyword_set(deinterlace) then threshold /= 2
 endif
 
+;; centers of spots are estimates for particle centers: (xp, yp)
 p = fastfeature(ct, threshold, pickn = pickn, count = count, /npixels) ; find peaks
 if count lt 1 then begin
    message, umsg, /inf, noprint = noprint
