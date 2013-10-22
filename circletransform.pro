@@ -18,6 +18,11 @@
 ; KEYWORD PARAMETERS:
 ;    noise: estimate for additive pixel noise.
 ;        Default: noise estimated by MAD().
+;
+;    uncertainty: maximum allowable distance to true center based
+;        on NOISE [pixel]
+;        Default: 5
+;
 ;    deinterlace: if set to an odd number, then only perform
 ;        transform on odd field of an interlaced image.
 ;        If set to an even number, transform even field.
@@ -79,6 +84,7 @@
 ; 03/27/2013 DGG eliminate repetitive operations in loops.
 ; 05/13/2013 DGG suppress borders, which are over-counted.
 ; 10/04/2013 DGG and Mark Hannel: fix boundary cropping.
+; 10/22/2013 DGG added UNCERTAINTY keyword.
 ;
 ; Copyright (c) 2008-2013 David G. Grier and Mark Hannel
 ;
@@ -86,6 +92,7 @@
 
 function circletransform, a_, $
                           noise = noise, $
+                          uncertainty = uncertainty, $
                           range = range, $
                           deinterlace = deinterlace
 
@@ -117,6 +124,9 @@ endif else $
 if ~isa(noise, /scalar, /number) then $
    noise = mad(a)
 
+if ~isa(uncertainty, /scalar, /number) then $
+   uncertainty = 5.
+
 dx = savgol2d(7, 3, dx = 1)
 dadx = convol(a, dx, /edge_truncate)
 dady = convol(a, transpose(dx), /edge_truncate)
@@ -138,7 +148,7 @@ dgrada = dgrada[w] / grada
 costheta = dadx[w] / grada
 sintheta = dady[w] / grada
 
-rng = round(2./tan(dgrada/2.)) < nx
+rng = round(uncertainty/tan(dgrada/2.)) < nx
 range = max(rng)
 r = findgen(2*range + 1) - range
 
