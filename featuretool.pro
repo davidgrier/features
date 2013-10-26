@@ -45,8 +45,9 @@
 ; 06/10/2010: DGG. Added COMPILE_OPT statements.  Corrected IDLSNAP
 ;    behavior when no video signals are detected.  Separate and format
 ;    help text and metaprogramming code.
+; 10/26/2013 DGG Metaprogramming
 ;
-; Copyright (c) 2005-2010 David G. Grier
+; Copyright (c) 2005-2013 David G. Grier
 ;-
 
 ;;;
@@ -275,6 +276,7 @@ COMPILE_OPT IDL2, HIDDEN
  ';;; Process file ...'                                   + nl + $
  'f = file_search(filespec, count = nfiles)'              + nl + $
  'for n = 0, nfiles-1 do begin'                           + nl + $
+ '   print, f[n]'                                         + nl + $
  '   a = read_image(f[n])'
 
   if ((s.p.xmax - s.p.xmin + 1) ne s.p.w) or $
