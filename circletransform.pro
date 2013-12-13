@@ -3,8 +3,8 @@
 ;    circletransform
 ;
 ; PURPOSE:
-;    Performs a transform similar to a Hough transform
-;    for detecting circular features in an image.
+;    Performs an orientational alignment transform,
+;    which is useful for detecting circular features in an image.
 ;
 ; CATEGORY:
 ;    Image analysis, feature detection
@@ -16,13 +16,6 @@
 ;    a: [nx,ny] image data
 ;
 ; KEYWORD PARAMETERS:
-;    noise: estimate for additive pixel noise.
-;        Default: noise estimated by MAD().
-;
-;    uncertainty: maximum allowable distance to true center based
-;        on NOISE [pixel]
-;        Default: 5
-;
 ;    deinterlace: if set to an odd number, then only perform
 ;        transform on odd field of an interlaced image.
 ;        If set to an even number, transform even field.
@@ -32,9 +25,6 @@
 ;    b: [nx,ny] circle transform.  Peaks correspond to estimated
 ;        centers of circular features in a.
 ;
-; KEYWORD OUTPUTS:
-;    range: mean range used in tallying votes.
-;
 ; PROCEDURE:
 ;    Compute the gradient of the image.  The local gradient at each
 ;    pixel defines a line along which the center of a circle may
@@ -43,11 +33,15 @@
 ;    correspond to the centers of circular features in the original
 ;    image.
 ;
-; REFERENCE:
-; F. C. Cheong, B. Sun, R. Dreyfus, J. Amato-Grill, K. Xiao, L. Dixon
-; & D. G. Grier,
-; Flow visualization and flow cytometry with holographic video
-; microscopy, Optics Express 17, 13071-13079 (2009)
+; REFERENCES:
+; 1. F. C. Cheong, B. Sun, R. Dreyfus, J. Amato-Grill, K. Xiao, L. Dixon
+;    & D. G. Grier, "Flow visualization and flow cytometry with
+;    holographic video microscopy," Optics Express 17,
+;    13071-13079 (2009)
+;
+; 2. B. J. Krishnatreya & D. G. Grier, "Fast feature identification
+;    for holographic tracking: The orientation alignment transform,"
+;    preprint (2013)
 ;
 ; EXAMPLE:
 ;    IDL> b = circletransform(a)
@@ -85,16 +79,17 @@
 ; 05/13/2013 DGG suppress borders, which are over-counted.
 ; 10/04/2013 DGG and Mark Hannel: fix boundary cropping.
 ; 10/22/2013 DGG added UNCERTAINTY keyword.
+; 12/03/2013 DGG Major overhaul: Field-theoretic implementation of
+;    the voting algorithm yields factor of 10 speed-up.
+; 12/13/2013 DGG use EXTRA for compatibility with pervious version.
 ;
 ; Copyright (c) 2008-2013 David G. Grier and Mark Hannel
 ;
 ;-
 
 function circletransform, a_, $
-                          noise = noise, $
-                          uncertainty = uncertainty, $
-                          range = range, $
-                          deinterlace = deinterlace
+                          deinterlace = deinterlace, $
+                          _extra = ex
 
 COMPILE_OPT IDL2
 
@@ -118,57 +113,37 @@ dodeinterlace = isa(deinterlace, /scalar, /number) ? deinterlace gt 0 : 0
 if dodeinterlace then begin
    n0 = deinterlace mod 2
    a = float(a_[*, n0:*:2])
+   ny = n_elements(a[0, *])
 endif else $
    a = float(a_)
 
-if ~isa(noise, /scalar, /number) then $
-   noise = mad(a)
-
-if ~isa(uncertainty, /scalar, /number) then $
-   uncertainty = 5.
-
+; gradient of image
+; \nabla a = (dadx, dady)
 dx = savgol2d(7, 3, dx = 1)
 dadx = convol(a, dx, /edge_truncate)
 dady = convol(a, transpose(dx), /edge_truncate)
 if dodeinterlace then dady /= 2.
-grada = sqrt(dadx^2 + dady^2)           ; magnitude of the gradient
-dgrada = noise * sqrt(2. * total(dx^2)) ; error in gradient magnitude due to noise
-w = where(grada gt 2.*dgrada, npts)     ; only consider votes with small angular uncertainty
 
-b = intarr(nx, ny)              ; accumulator array for the result
+; orientational order parameter
+; psi = |\nabla a|^2 \exp(i 2 \theta)
+psi = dcomplex(dadx, dady)
+psi *= psi
 
-if npts le 0 then return, b
+; Fourier transform of the orientational alignment kernel:
+; K(k) = e^(-2 i \theta) / k
+kx = rebin(findgen(nx)/nx - 0.5, nx, ny, /sample)
+ky = rebin(findgen(1, ny)/ny - 0.5, nx, ny, /sample)
+if dodeinterlace then ky /= 2.
+k = sqrt(kx^2 + ky^2) + 0.001
+ker = (dcomplex(kx, -ky))^2 / k^3
 
-xp = w mod nx                   ; coordinates of pixels with strong gradients
-yp = w / nx
-if dodeinterlace then yp = 2*yp + n0
+; convolve orientational order parameter with
+; orientational alignment kernel using
+; Fourier convolution theorem
+psi = fft(psi, -1, /center, /overwrite)
+psi = fft(psi*ker, 1, /center, /overwrite)
 
-grada = grada[w]                ; gradient direction at each pixel
-dgrada = dgrada[w] / grada
-costheta = dadx[w] / grada
-sintheta = dady[w] / grada
-
-rng = round(uncertainty/tan(dgrada/2.)) < nx
-range = max(rng)
-r = findgen(2*range + 1) - range
-
-nx--
-ny--
-for i = 0L, npts-1L do begin 
-   rr = r[range-rng[i]:range+rng[i]]
-   x = (xp[i] + round(rr * costheta[i])) > 0 < nx
-   y = (yp[i] + round(rr * sintheta[i])) > 0 < ny
-   b[x, y]++
-endfor
-
-; borders are over-counted because of > and <
-b[*, 0] = 0
-b[0, *] = 0
-b[-1, *] = 0
-b[*, -1] = 0
-
-if arg_present(range) then $
-   range = median(rng)
-
-return, b
+; intensity of convolution identifies rotationally
+; symmetric centers
+return, real_part(psi*conj(psi))
 end
