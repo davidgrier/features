@@ -15,14 +15,8 @@
 ;    a: two-dimensional image data
 ;
 ; KEYWORD PARAMETERS:
-;    noise: estimate for additive noise in pixel values
-;        Default: set by CIRCLETRANSFORM
-;
-;    snr: threshold signal-to-noise ratio for identifying a feature.
-;        Default: 10.
-;
 ;    threshold: threshold for detecting features
-;        Default: estimated from SNR and range computed by CIRCLETRANSFORM. 
+;        Default: estimated from A.
 ;
 ;    pickn: number of features to seek, brightest first
 ;        Default: all
@@ -39,7 +33,7 @@
 ;    f: [2,npts] array of feature coordinates
 ;
 ; PROCEDURE:
-;    CIRCLETRANSFORM transforms ring-like features in an image into
+;    CT2 transforms ring-like features in an image into
 ;        bright features on a dark background.
 ;    FASTFEATURE locates these bright features.
 ;
@@ -59,18 +53,19 @@
 ;   smooth.
 ; 10/22/2013 DGG Default threshold is SNR above random hits at range
 ;   provided by circletransform.  Added SNR keyword.
+; 12/04/2013 DGG Updated for new version of circletransform.
+; 12/13/2013 DGG Use EXTRA for compatibility with older versions
 ;
 ; Copyright (c) 2012-2013 David G. Grier
 ;-
 function ctfeature, a, $
-                    noise = noise, $
-                    snr = snr, $
+                    ct = ct, $
                     threshold = threshold, $
                     pickn = pickn, $
                     count = count, $
-                    ct = ct, $
                     deinterlace = deinterlace, $
-                    quiet = quiet
+                    quiet = quiet, $
+                    _extra = ex
 
 COMPILE_OPT IDL2
 
@@ -85,14 +80,14 @@ noprint = keyword_set(quiet)
 
 ; Find candidate features ...
 ;; transform ring-like patterns into spots
-ct = circletransform(a, noise = noise, range = range, deinterlace = deinterlace)
+ct = circletransform(a, deinterlace = deinterlace)
 
-;; estimate threshold for features relative to random hits
-if ~isa(snr, /number, /scalar) then $
-   snr = 10.
+;; estimate threshold for feature detection
 if ~isa(threshold, /number, /scalar) then begin
-   threshold = snr*range
-   if keyword_set(deinterlace) then threshold /= 2
+   npts = n_elements(ct)
+   mb = total(ct)/npts
+   sb = sqrt(total((ct - mb)^2)/(npts - 1.))
+   threshold = mb + 3.*sb
 endif
 
 ;; centers of spots are estimates for particle centers: (xp, yp)
@@ -109,5 +104,11 @@ if count lt 1 then begin
             noprint = noprint
    return, -1
 endif
-return, p[*, w]
+p = p[*, w]
+
+;; scale y coordinate in deinterlaced images
+if (isa(deinterlace, /number, /scalar)) ? deinterlace gt 0 : 0 then $
+   p[1, *] =  2.*p[1, *] + (deinterlace mod 2)
+
+return, p
 end
