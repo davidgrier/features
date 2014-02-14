@@ -82,6 +82,7 @@
 ; 12/03/2013 DGG Major overhaul: Field-theoretic implementation of
 ;    the voting algorithm yields factor of 10 speed-up.
 ; 12/13/2013 DGG use EXTRA for compatibility with pervious version.
+; 02/14/2014 DGG better handling of divergence at k = 0.
 ;
 ; Copyright (c) 2008-2013 David G. Grier and Mark Hannel
 ;
@@ -134,7 +135,7 @@ psi *= psi
 kx = rebin(findgen(nx)/nx - 0.5, nx, ny, /sample)
 ky = rebin(findgen(1, ny)/ny - 0.5, nx, ny, /sample)
 if dodeinterlace then ky /= 2.
-k = sqrt(kx^2 + ky^2) + 0.001
+k = sqrt(kx^2 + ky^2) > 0.001
 ker = (dcomplex(kx, -ky))^2 / k^3
 
 ; convolve orientational order parameter with
