@@ -81,7 +81,7 @@
 ; 10/22/2013 DGG added UNCERTAINTY keyword.
 ; 12/03/2013 DGG Major overhaul: Field-theoretic implementation of
 ;    the voting algorithm yields factor of 10 speed-up.
-; 12/13/2013 DGG use EXTRA for compatibility with pervious version.
+; 12/13/2013 DGG use EXTRA for compatibility with previous version.
 ; 02/14/2014 DGG better handling of divergence at k = 0.
 ; 07/06/2014 DGG subtle fix for odd dimensions.
 ;
