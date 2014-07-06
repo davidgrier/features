@@ -132,8 +132,10 @@ psi *= psi
 
 ; Fourier transform of the orientational alignment kernel:
 ; K(k) = e^(-2 i \theta) / k
-kx = rebin(findgen(nx)/nx - 0.5 * (1. - (nx mod 2)/float(nx)), nx, ny, /sample)
-ky = rebin(findgen(1, ny)/ny - 0.5 * (1. - (ny mod 2)/float(ny)), nx, ny, /sample)
+kx0 = -0.5 * (1. - (nx mod 2)/float(nx))
+ky0 = -0.5 * (1. - (ny mod 2)/float(ny))
+kx = rebin(findgen(nx, start = kx0, increment = 1./nx), nx, ny, /sample)
+ky = rebin(findgen(1, ny, start = ky0, increment = 1./ny), nx, ny, /sample)
 if dodeinterlace then ky /= 2.
 k = sqrt(kx^2 + ky^2) > 0.001
 ker = (dcomplex(kx, -ky))^2 / k^3
