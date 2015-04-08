@@ -25,6 +25,11 @@ features suitable for tracking with CG algorithms.
     * **ctfeature**: Uses circletransform and fastfeature to identify and characterize
 ring-like features in an image.
 
+### Related Projects
+
+1. [Particle Tracking in IDL](http://www.physics.emory.edu/faculty/weeks//idl/index.html) by Eric Weeks and John Crocker.
+2. [Trackpy](http://soft-matter.github.io/trackpy) Particle tracking in Python.
+
 ### References
 1. J. C. Crocker and D. G. Grier, "Methods of digital video microscopy for colloidal studies,"
 _Journal of Colloid and Interface Science_ **179**, 298-310 (1996).
