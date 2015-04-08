@@ -21,6 +21,10 @@
 ;        If set to an even number, transform even field.
 ;        Default: Not set or set to zero: transform entire frame.
 ;
+;    gradient_weighted: If set, weight the local order parameter by the
+;        squared magnitude of the local gradient:
+;        Default: no weighting \psi(r) = \exp(2 i \theta)
+;
 ; OUTPUTS:
 ;    b: [nx,ny] circle transform.  Peaks correspond to estimated
 ;        centers of circular features in a.
@@ -84,12 +88,16 @@
 ; 12/13/2013 DGG use EXTRA for compatibility with previous version.
 ; 02/14/2014 DGG better handling of divergence at k = 0.
 ; 07/06/2014 DGG subtle fix for odd dimensions.
+; 04/08/2015 DGG & Ellery Russell Order parameter no longer weighted
+;    by gradient.  Old behavior can be restored with GRADIENT_WEIGHTED.
 ;
-; Copyright (c) 2008-2014 David G. Grier and Mark Hannel
+; Copyright (c) 2008-2015 David G. Grier, Mark Hannel, Ellery Russell
+;    and David B. Ruffner
 ;-
 
 function circletransform, a_, $
                           deinterlace = deinterlace, $
+                          gradient_weighted = gradient_weighted, $
                           _extra = ex
 
 COMPILE_OPT IDL2
@@ -127,8 +135,12 @@ if dodeinterlace then dady /= 2.
 
 ; orientational order parameter
 ; psi = |\nabla a|^2 \exp(i 2 \theta)
-psi = dcomplex(dadx, dady)
-psi *= psi
+if keyword_set(gradient_weighted) then begin
+   psi = dcomplex(dadx, dady)
+   psi *= psi
+endif else $
+; psi = \exp(i 2 \theta)
+   psi = exp(dcomplex(0., 2.*atan(dady, dadx)))
 
 ; Fourier transform of the orientational alignment kernel:
 ; K(k) = e^(-2 i \theta) / k
