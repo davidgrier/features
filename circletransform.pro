@@ -16,6 +16,12 @@
 ;    a: [nx,ny] image data
 ;
 ; KEYWORD PARAMETERS:
+;    smoothing: Integer smoothing factor.  Larger values yield
+;        more smoothing during gradient calculations, improving
+;        noise suppression at the expense of suppressing fine
+;        features.
+;        Default: 0
+;
 ;    deinterlace: if set to an odd number, then only perform
 ;        transform on odd field of an interlaced image.
 ;        If set to an even number, transform even field.
@@ -89,7 +95,9 @@
 ; 02/14/2014 DGG better handling of divergence at k = 0.
 ; 07/06/2014 DGG subtle fix for odd dimensions.
 ; 04/08/2015 DGG & Ellery Russell Order parameter no longer weighted
-;    by gradient.  Old behavior can be restored with GRADIENT_WEIGHTED.
+;    by gradient.  Old behavior can be restored with
+;    GRADIENT_WEIGHTED.
+; 04/09/2015 DGG Implemented SMOOTHING.
 ;
 ; Copyright (c) 2008-2015 David G. Grier, Mark Hannel, Ellery Russell
 ;    and David B. Ruffner
@@ -98,6 +106,7 @@
 function circletransform, a_, $
                           deinterlace = deinterlace, $
                           gradient_weighted = gradient_weighted, $
+                          smoothing = smoothing, $
                           _extra = ex
 
 COMPILE_OPT IDL2
@@ -128,7 +137,11 @@ endif else $
 
 ; gradient of image
 ; \nabla a = (dadx, dady)
-dx = savgol2d(7, 3, dx = 1)
+order = 3
+range = 7
+if isa(smoothing, /scalar, /number) && (smoothing ge 0) then $
+   range += round(smoothing)
+dx = savgol2d(range, order, dx = 1)
 dadx = convol(a, dx, /edge_truncate)
 dady = convol(a, transpose(dx), /edge_truncate)
 if dodeinterlace then dady /= 2.
