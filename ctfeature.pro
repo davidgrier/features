@@ -55,8 +55,9 @@
 ;   provided by circletransform.  Added SNR keyword.
 ; 12/04/2013 DGG Updated for new version of circletransform.
 ; 12/13/2013 DGG Use EXTRA for compatibility with older versions
+; 04/08/2015 DGG Use MOMENT for threshold calculation.
 ;
-; Copyright (c) 2012-2013 David G. Grier
+; Copyright (c) 2012-2015 David G. Grier
 ;-
 function ctfeature, a, $
                     ct = ct, $
@@ -84,10 +85,8 @@ ct = circletransform(a, deinterlace = deinterlace)
 
 ;; estimate threshold for feature detection
 if ~isa(threshold, /number, /scalar) then begin
-   npts = n_elements(ct)
-   mb = total(ct)/npts
-   sb = sqrt(total((ct - mb)^2)/(npts - 1.))
-   threshold = mb + 3.*sb
+   res = moment(ct, maxmoment = 2)
+   threshold = res[0] + 3.*sqrt(res[1])
 endif
 
 ;; centers of spots are estimates for particle centers: (xp, yp)
