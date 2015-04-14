@@ -90,73 +90,73 @@ function fastfeature, image, threshold, $
                       deinterlace = deinterlace, $
                       npixels = npixels
 
-COMPILE_OPT IDL2
+  COMPILE_OPT IDL2
 
-umsg = 'p = fastfeature(image, threshold)'
+  umsg = 'p = fastfeature(image, threshold)'
 
-if n_params() ne 2 then begin
-   message, umsg, /inf
-   return, -1
-endif
+  if n_params() ne 2 then begin
+     message, umsg, /inf
+     return, -1
+  endif
 
-if ~isa(image, /number, /array) then begin
-   message, umsg, /inf
-   message, 'image must be a numerical array', /inf
-   return, -1
-endif
+  if ~isa(image, /number, /array) then begin
+     message, umsg, /inf
+     message, 'image must be a numerical array', /inf
+     return, -1
+  endif
 
-sz = size(image)
-nd = sz[0]
+  sz = size(image)
+  nd = sz[0]
 
-if nd ne 2 && nd ne 3 then begin
-   message, umsg, /inf
-   message, 'image must be two- or three-dimensional', /inf
-   return, -1
-endif
+  if nd ne 2 && nd ne 3 then begin
+     message, umsg, /inf
+     message, 'image must be two- or three-dimensional', /inf
+     return, -1
+  endif
 
-if ~isa(threshold, /number, /scalar) then begin
-   message, umsg, /inf
-   message, 'threshold must be a number', /inf
-   return, -1
-endif
+  if ~isa(threshold, /number, /scalar) then begin
+     message, umsg, /inf
+     message, 'threshold must be a number', /inf
+     return, -1
+  endif
    
-dodeinterlace = keyword_set(deinterlace)
-countpixels = keyword_set(npixels)
-y0 = (dodeinterlace) ? long(deinterlace) mod 1L : 0
-dy = (dodeinterlace) ? 2 : 1
-img = keyword_set(dark) ? threshold - image[*, y0:*:dy, *] : $
-                          image[*, y0:*:dy, *] - threshold
-reg = label_region(img gt 0, /all_neighbors)
+  dodeinterlace = keyword_set(deinterlace)
+  countpixels = keyword_set(npixels)
+  y0 = (dodeinterlace) ? long(deinterlace) mod 1L : 0
+  dy = (dodeinterlace) ? 2 : 1
+  img = keyword_set(dark) ? threshold - image[*, y0:*:dy, *] : $
+        image[*, y0:*:dy, *] - threshold
+  reg = label_region(img gt 0, /all_neighbors)
 
-;;; Find centroid of each labeled region
-n = histogram(reg, reverse_indices = r)
-count = n_elements(n) - 1       ; do not count background as a feature
-if count le 0 then $
-   return, -1
+  ;;; Find centroid of each labeled region
+  n = histogram(reg, reverse_indices = r)
+  count = n_elements(n) - 1     ; do not count background as a feature
+  if count le 0 then $
+     return, -1
 
-f = fltarr(nd+1, count, /nozero)
-for i = 1, count do begin                            ; the background is region 0
-   ndx = r[r[i]:r[i+1]-1]                            ; 1D indices of pixels in region i
-   nn = array_indices(img, ndx)                      ; nd-dimensional indices of pixels in i
-   if dodeinterlace then $
-      nn[1,*] = dy*temporary(nn[1,*]) + y0
-   v = transpose(rebin(img[ndx], n[i], nd, /sample))        ; values in region i
-   f[0,i-1] = (n[i] eq 1) ? nn : total(nn*v, 2)/total(v, 2) ; value-weighted centers
-   f[nd,i-1] = (countpixels) ? n[i] : total(img[ndx])       ; integrated brightness
-endfor
+  f = fltarr(nd+1, count, /nozero)
+  for i = 1, count do begin       ; the background is region 0
+     ndx = r[r[i]:r[i+1]-1]       ; 1D indices of pixels in region i
+     nn = array_indices(img, ndx) ; nd-dimensional indices of pixels in i
+     if dodeinterlace then $
+        nn[1,*] = dy*temporary(nn[1,*]) + y0
+     v = transpose(rebin(img[ndx], n[i], nd, /sample))        ; values in region i
+     f[0,i-1] = (n[i] eq 1) ? nn : total(nn*v, 2)/total(v, 2) ; value-weighted centers
+     f[nd,i-1] = (countpixels) ? n[i] : total(img[ndx])       ; integrated brightness
+  endfor
 
-if isa(pickn, /scalar, /number) then begin
-   if count gt pickn then begin
-      order = reverse(sort(f[nd,*]))
-      f = f[*, order[0:pickn-1]]
-      count = pickn
-   endif
-endif
+  if isa(pickn, /scalar, /number) then begin
+     if count gt pickn then begin
+        order = reverse(sort(f[nd,*]))
+        f = f[*, order[0:pickn-1]]
+        count = pickn
+     endif
+  endif
 
-if keyword_set(center) then begin
-   for i = 0, nd-1 do $
-      f[i, *] -= (sz[i+1] - 1.)/2.
-endif
-
-return, f
+  if keyword_set(center) then begin
+     for i = 0, nd-1 do $
+        f[i, *] -= (sz[i+1] - 1.)/2.
+  endif
+  
+  return, f
 end
