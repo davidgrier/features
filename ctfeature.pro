@@ -77,49 +77,50 @@ function ctfeature, a, $
                     quiet = quiet, $
                     _extra = ex
 
-COMPILE_OPT IDL2
+  COMPILE_OPT IDL2
 
-umsg = 'USAGE: f = ctfeature(a)'
+  umsg = 'USAGE: f = ctfeature(a)'
 
-if n_params() ne 1 then begin
-   message, umsg, /inf
-   return, -1
-endif
+  if n_params() ne 1 then begin
+     message, umsg, /inf
+     return, -1
+  endif
 
-noprint = keyword_set(quiet)
+  noprint = keyword_set(quiet)
 
-; Find candidate features ...
-;; transform ring-like patterns into spots
-ct = circletransform(a, $
-                     smoothing = smoothing, $
-                     gradient_weighted = gradient_weighted, $
-                     deinterlace = deinterlace)
+  ; Find candidate features ...
+  ;; transform ring-like patterns into spots
+  ct = circletransform(a, $
+                       smoothing = smoothing, $
+                       gradient_weighted = gradient_weighted, $
+                       deinterlace = deinterlace)
 
-;; estimate threshold for feature detection
-if ~isa(threshold, /number, /scalar) then begin
-   res = moment(ct, maxmoment = 2)
-   threshold = res[0] + 3.*sqrt(res[1])
-endif
+  ;; estimate threshold for feature detection
+  if ~isa(threshold, /number, /scalar) then begin
+     res = moment(ct, maxmoment = 2)
+     threshold = res[0] + 3.*sqrt(res[1])
+  endif
 
-;; centers of spots are estimates for particle centers: (xp, yp)
-p = fastfeature(ct, threshold, pickn = pickn, count = count, /npixels) ; find peaks
-if count lt 1 then begin
-   message, umsg, /inf, noprint = noprint
-   message, 'no features found above threshold = '+strtrim(threshold, 2), /inf, noprint = noprint
-   return, -1
-endif
-w = where(p[2, *] ge 9, count)
-if count lt 1 then begin
-   message, umsg, /inf, noprint = noprint
-   message, 'no 8-pixel features found above threshold = '+strtrim(threshold, 2), /inf, $
-            noprint = noprint
-   return, -1
-endif
-p = p[*, w]
-
-;; scale y coordinate in deinterlaced images
-if (isa(deinterlace, /number, /scalar)) ? deinterlace gt 0 : 0 then $
-   p[1, *] =  2.*p[1, *] + (deinterlace mod 2)
-
-return, p
+  ;; centers of spots are estimates for particle centers: (xp, yp)
+  p = fastfeature(ct, threshold, pickn = pickn, count = count, /npixels) ; find peaks
+  if count lt 1 then begin
+     message, umsg, /inf, noprint = noprint
+     message, 'no features found above threshold = ' + strtrim(threshold, 2), $
+              /inf, noprint = noprint
+     return, -1
+  endif
+  w = where(p[2, *] ge 9, count)
+  if count lt 1 then begin
+     message, umsg, /inf, noprint = noprint
+     message, 'no 8-pixel features found above threshold = '+strtrim(threshold, 2), $
+              /inf, noprint = noprint
+     return, -1
+  endif
+  p = p[*, w]
+  
+  ;; scale y coordinate in deinterlaced images
+  if (isa(deinterlace, /number, /scalar)) ? deinterlace gt 0 : 0 then $
+     p[1, *] =  2.*p[1, *] + (deinterlace mod 2)
+  
+  return, p
 end
