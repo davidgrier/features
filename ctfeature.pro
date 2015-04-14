@@ -18,12 +18,19 @@
 ;    threshold: threshold for detecting features
 ;        Default: estimated from A.
 ;
+;    smoothing: Additional smoothing to suppress noise at the
+;        expense of fine features.
+;        Default: 0
+;
 ;    pickn: number of features to seek, brightest first
 ;        Default: all
 ;
 ;    count: number of features returned.
 ;
 ; KEYWORD FLAGS:
+;    gradient_weighted: Set to use original gradient-weighted
+;        circletransform algorithm.
+;
 ;    deinterlace: Set to an even number to find features
 ;        in the even field, odd in the odd.
 ;
@@ -62,6 +69,8 @@
 function ctfeature, a, $
                     ct = ct, $
                     threshold = threshold, $
+                    smoothing = smoothing, $
+                    gradient_weighted = gradient_weighted, $
                     pickn = pickn, $
                     count = count, $
                     deinterlace = deinterlace, $
@@ -81,7 +90,10 @@ noprint = keyword_set(quiet)
 
 ; Find candidate features ...
 ;; transform ring-like patterns into spots
-ct = circletransform(a, deinterlace = deinterlace)
+ct = circletransform(a, $
+                     smoothing = smoothing, $
+                     gradient_weighted = gradient_weighted, $
+                     deinterlace = deinterlace)
 
 ;; estimate threshold for feature detection
 if ~isa(threshold, /number, /scalar) then begin

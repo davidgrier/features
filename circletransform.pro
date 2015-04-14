@@ -139,7 +139,7 @@ endif else $
 ; \nabla a = (dadx, dady)
 order = 3
 range = 7
-if isa(smoothing, /scalar, /number) && (smoothing ge 0) then $
+if isa(smoothing, /scalar, /number) && (smoothing gt 0) then $
    range += round(smoothing)
 dx = savgol2d(range, order, dx = 1)
 dadx = convol(a, dx, /edge_truncate)
