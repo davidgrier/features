@@ -145,12 +145,10 @@ function fastfeature, image, threshold, $
      f[nd,i-1] = (countpixels) ? n[i] : total(img[ndx])       ; integrated brightness
   endfor
 
-  if isa(pickn, /scalar, /number) then begin
-     if count gt pickn then begin
+  if isa(pickn, /scalar, /number) && (count gt pickn) then begin
         order = reverse(sort(f[nd,*]))
         f = f[*, order[0:pickn-1]]
         count = pickn
-     endif
   endif
 
   if keyword_set(center) then begin
