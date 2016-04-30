@@ -115,73 +115,73 @@ function circletransform, a_, $
                           order = order, $
                           _extra = ex
 
-COMPILE_OPT IDL2
+  COMPILE_OPT IDL2
 
-umsg = 'USAGE: b = circletransform(a)'
+  umsg = 'USAGE: b = circletransform(a)'
 
-if ~isa(a_, /number, /array) then begin
-   message, umsg, /inf
-   return, -1
-endif
-if size(a_, /n_dimensions) ne 2 then begin
-   message, umsg, /inf
-   message, 'A must be a two-dimensional numeric array', /inf
-   return, -1
-endif
+  if ~isa(a_, /number, /array) then begin
+     message, umsg, /inf
+     return, -1
+  endif
+  if size(a_, /n_dimensions) ne 2 then begin
+     message, umsg, /inf
+     message, 'A must be a two-dimensional numeric array', /inf
+     return, -1
+  endif
 
-sz = size(a_, /dimensions)
-nx = sz[0]
-ny = sz[1]
+  sz = size(a_, /dimensions)
+  nx = sz[0]
+  ny = sz[1]
+  
+  dodeinterlace = isa(deinterlace, /scalar, /number) ? deinterlace gt 0 : 0
+  if dodeinterlace then begin
+     n0 = deinterlace mod 2
+     a = float(a_[*, n0:*:2])
+     ny = n_elements(a[0, *])
+  endif else $
+     a = float(a_)
 
-dodeinterlace = isa(deinterlace, /scalar, /number) ? deinterlace gt 0 : 0
-if dodeinterlace then begin
-   n0 = deinterlace mod 2
-   a = float(a_[*, n0:*:2])
-   ny = n_elements(a[0, *])
-endif else $
-   a = float(a_)
+  ;; gradient of image
+  ;; \nabla a = (dadx, dady)
+  g_order = 3
+  g_range = 7
+  if isa(smoothing, /scalar, /number) && (smoothing gt 0) then $
+     g_range += round(smoothing)
+  dx = savgol2d(g_range, g_order, dx = 1)
+  dadx = convol(a, dx, /edge_truncate)
+  dady = convol(a, transpose(dx), /edge_truncate)
+  if dodeinterlace then dady /= 2.
 
-; gradient of image
-; \nabla a = (dadx, dady)
-g_order = 3
-g_range = 7
-if isa(smoothing, /scalar, /number) && (smoothing gt 0) then $
-   g_range += round(smoothing)
-dx = savgol2d(g_range, g_order, dx = 1)
-dadx = convol(a, dx, /edge_truncate)
-dady = convol(a, transpose(dx), /edge_truncate)
-if dodeinterlace then dady /= 2.
+  order = isa(order, /number, /scalar) ? float(order) > 0. : 0.
 
-order = isa(order, /number, /scalar) ? float(order) > 0. : 0.
+  ;; orientational order parameter
+  gradsq = dadx^2 + dady^2 > 1e-3
+  psi = (dadx * dady)/gradsq    ; \psi = \sin(2\theta)/2
+  if order gt 0 then $
+     psi ^= 2.*order + 1.       ; \psi = \sin^n(2\theta)
+  if keyword_set(gradient_weighted) then $
+     psi *= gradsq              ; \psi = |\nabla a|^2 \sin^n(2\theta)
 
-; orientational order parameter
-gradsq = dadx^2 + dady^2 > 1e-3
-psi = (dadx * dady)/gradsq      ; \psi = \sin(2\theta)/2
-if order gt 0 then $
-   psi ^= 2.*order + 1.         ; \psi = \sin^n(2\theta)
-if keyword_set(gradient_weighted) then $
-   psi *= gradsq       ; \psi = |\nabla a|^2 \sin^n(2\theta)
+  ;; Fourier transform of the orientational alignment kernel:
+  ; K(k) = \sin^n(2\theta) / k
+  kx0 = -0.5 * (1. - (nx mod 2)/float(nx))
+  ky0 = -0.5 * (1. - (ny mod 2)/float(ny))
+  kx = rebin(findgen(nx, start = kx0, increment = 1./nx), nx, ny, /sample)
+  ky = rebin(findgen(1, ny, start = ky0, increment = 1./ny), nx, ny, /sample)
+  if dodeinterlace then ky /= 2.
+  k = sqrt(kx^2 + ky^2) > 1e-6
+  ker = kx*ky/k^2
+  if order gt 0 then $
+     ker ^= 2.*order+1.
+  ker /= k
 
-; Fourier transform of the orientational alignment kernel:
-; K(k) = \sin^n(2\theta) / k
-kx0 = -0.5 * (1. - (nx mod 2)/float(nx))
-ky0 = -0.5 * (1. - (ny mod 2)/float(ny))
-kx = rebin(findgen(nx, start = kx0, increment = 1./nx), nx, ny, /sample)
-ky = rebin(findgen(1, ny, start = ky0, increment = 1./ny), nx, ny, /sample)
-if dodeinterlace then ky /= 2.
-k = sqrt(kx^2 + ky^2) > 1e-6
-ker = kx*ky/k^2
-if order gt 0 then $
-   ker ^= 2.*order+1.
-ker /= k
+  ;; convolve orientational order parameter with
+  ;; orientational alignment kernel using
+  ;; Fourier convolution theorem
+  psi = fft(psi, -1, /center, /overwrite)
+  psi = fft(psi*ker, 1, /center, /overwrite)
 
-; convolve orientational order parameter with
-; orientational alignment kernel using
-; Fourier convolution theorem
-psi = fft(psi, -1, /center, /overwrite)
-psi = fft(psi*ker, 1, /center, /overwrite)
-
-; intensity of convolution identifies rotationally
-; symmetric centers
-return, real_part(psi)^2
+  ;; intensity of convolution identifies rotationally
+  ;; symmetric centers
+  return, real_part(psi)^2
 end
