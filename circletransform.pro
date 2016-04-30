@@ -117,6 +117,9 @@ function circletransform, a_, $
 
   COMPILE_OPT IDL2
 
+  except = !except
+  !except = 0                   ; suppress underflow errors
+  
   umsg = 'USAGE: b = circletransform(a)'
 
   if ~isa(a_, /number, /array) then begin
@@ -181,6 +184,8 @@ function circletransform, a_, $
   psi = fft(psi, -1, /center, /overwrite)
   psi = fft(psi*ker, 1, /center, /overwrite)
 
+  !except = except
+  
   ;; intensity of convolution identifies rotationally
   ;; symmetric centers
   return, real_part(psi)^2
