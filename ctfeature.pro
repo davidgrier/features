@@ -93,6 +93,7 @@ function ctfeature, a, $
   ct = circletransform(a, $
                        smoothing = smoothing, $
                        gradient_weighted = gradient_weighted, $
+                       order = 5, $
                        deinterlace = deinterlace)
 
   ;; estimate threshold for feature detection
