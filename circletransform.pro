@@ -1,44 +1,47 @@
+; docstyle = 'rst'
+
 ;+
-; NAME:
-;    circletransform
+; Perform an orientational alignment transform on an image
+; to detect circular features.
 ;
-; PURPOSE:
-;    Performs an orientational alignment transform,
-;    which is useful for detecting circular features in an image.
+; :Examples:
+;    IDL> b = circletransform(a)
 ;
-; CATEGORY:
-;    Image analysis, feature detection
+; :Params:
+;    a : in, required, type=array
+;        Two-dimensional image data of any numeric type
 ;
-; CALLING SEQUENCE:
-;    b = circletransform(a)
+; :Returns:
+;    b : Transformed image of same dimensions as A.
 ;
-; INPUTS:
-;    a: [nx,ny] image data
-;
-; KEYWORD PARAMETERS:
-;    smoothing: Integer smoothing factor.  Larger values yield
+; :Keywords:
+;    smoothing : in, optional, type=integer, default=0
+;        Smoothing factor.  Larger values yield
 ;        more smoothing during gradient calculations, improving
 ;        noise suppression at the expense of suppressing fine
 ;        features.
-;        Default: 0
 ;
-;    deinterlace: if set to an odd number, then only perform
-;        transform on odd field of an interlaced image.
-;        If set to an even number, transform even field.
+;    order : in, optional, type=integer, default=0
+;        Integer sharpness factor.  Larger values yield
+;        more sharply resolved peaks at the expense of spurious
+;        ringing.
+;        $n = 2 order + 1$.
+;        $\psi(\vec{r}) = \sin^n(2 \theta)$.
+;
+;    gradient_weighted : in, optional, type=boolean, default=0
+;        If set, weight the local order parameter by the
+;        squared magnitude of the local gradient:
+;        $\psi(\vec{r})
+;            = |\nabla a(\vec{r})|^2 \sin^2(2\theta)$
+;        Default: no weighting $\psi(r) = \sin^n(2\theta)$.
+;
+;    deinterlace : in, optional, type = integer
+;        If set to an odd number, then only perform
+;        transform on the odd field of an interlaced image.
+;        If set to an even number, transform the even field.
 ;        Default: Not set or set to zero: transform entire frame.
 ;
-;    gradient_weighted: If set, weight the local order parameter by the
-;        squared magnitude of the local gradient:
-;        Default: no weighting \psi(r) = \sin(2\theta)
-;
-;    order: integer sharpness factor.
-;        Default: 0
-;
-; OUTPUTS:
-;    b: [nx,ny] circle transform.  Peaks correspond to estimated
-;        centers of circular features in a.
-;
-; PROCEDURE:
+; :Procedure:
 ;    Compute the gradient of the image.  The local gradient at each
 ;    pixel defines a line along which the center of a circle may
 ;    lie.  Cast votes for pixels along the line in the transformed
@@ -46,7 +49,7 @@
 ;    correspond to the centers of circular features in the original
 ;    image.
 ;
-; REFERENCES:
+; :References:
 ; 1. F. C. Cheong, B. Sun, R. Dreyfus, J. Amato-Grill, K. Xiao, L. Dixon
 ;    & D. G. Grier, "Flow visualization and flow cytometry with
 ;    holographic video microscopy," Optics Express 17,
@@ -56,10 +59,7 @@
 ;    for holographic tracking: The orientation alignment transform,"
 ;    preprint (2013)
 ;
-; EXAMPLE:
-;    IDL> b = circletransform(a)
-;
-; MODIFICATION HISTORY:
+; :History:
 ; 10/07/2008 Written by David G. Grier, New York University.
 ; 01/26/2009 DGG Added DEINTERLACE keyword. Gracefully handle
 ;    case when original image has no features. Documentation cleanups.
@@ -104,10 +104,13 @@
 ; 04/29/2016 DGG Implemented ORDER, changed to sin(2\theta) rather
 ;    than exp(2 i \theta).
 ;
-; Copyright (c) 2008-2016 David G. Grier, Mark Hannel, Ellery Russell
+; :Author:
+;    David G. Grier, Mark Hannel, Ellery Russell and David B. Ruffner
+;
+; :Copyright:
+;    Copyright (c) 2008-2016 David G. Grier, Mark Hannel, Ellery Russell
 ;    and David B. Ruffner
 ;-
-
 function circletransform, a_, $
                           deinterlace = deinterlace, $
                           gradient_weighted = gradient_weighted, $
