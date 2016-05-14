@@ -123,6 +123,8 @@ function circletransform, a_, $
                           smoothing = smoothing, $
                           order = order, $
                           kernel = kernel, $
+                          dadx = dadx, $
+                          dady = dady, $
                           _extra = ex
 
   COMPILE_OPT IDL2
@@ -169,7 +171,7 @@ function circletransform, a_, $
 
   ;; orientational order parameter
   gradsq = dadx^2 + dady^2 > 1e-3
-  psi = (dadx * dady)/gradsq    ; $\psi = \sin(2\theta)/2$
+  psi = 2.*(dadx * dady)/gradsq ; $\psi = \sin(2\theta)/2$
   if order gt 0 then $
      psi ^= 2.*order + 1.       ; $\psi = \sin^n(2\theta)$
   if keyword_set(gradient_weighted) then $
@@ -184,7 +186,7 @@ function circletransform, a_, $
      ky = rebin(findgen(1, ny, start = ky0, increment = 1./ny), nx, ny, /sample)
      if dodeinterlace then ky /= 2.
      k = sqrt(kx^2 + ky^2) > 1e-6
-     kernel = kx*ky/k^2
+     kernel = 2.*(kx * ky)/k^2
      if order gt 0 then $
         kernel ^= 2.*order+1.
      kernel /= k
