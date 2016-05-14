@@ -35,11 +35,16 @@
 ;            = |\nabla a(\vec{r})|^2 \sin^2(2\theta)$
 ;        Default: no weighting $\psi(r) = \sin^n(2\theta)$.
 ;
-;    deinterlace : in, optional, type = integer
+;    deinterlace : in, optional, type=integer
 ;        If set to an odd number, then only perform
 ;        transform on the odd field of an interlaced image.
 ;        If set to an even number, transform the even field.
 ;        Default: Not set or set to zero: transform entire frame.
+;
+;    kernel : in, out, optional, type=array
+;        Orientational alignment kernel.  By default, this is computed
+;        for each image.  This keyword allows a computed kernel to be
+;        retained and reused for subsequent transforms.
 ;
 ; :Procedure:
 ;    Compute the gradient of the image.  The local gradient at each
@@ -116,6 +121,7 @@ function circletransform, a_, $
                           gradient_weighted = gradient_weighted, $
                           smoothing = smoothing, $
                           order = order, $
+                          kernel = kernel, $
                           _extra = ex
 
   COMPILE_OPT IDL2
@@ -169,23 +175,25 @@ function circletransform, a_, $
      psi *= gradsq              ; \psi = |\nabla a|^2 \sin^n(2\theta)
 
   ;; Fourier transform of the orientational alignment kernel:
-  ; K(k) = \sin^n(2\theta) / k
-  kx0 = -0.5 * (1. - (nx mod 2)/float(nx))
-  ky0 = -0.5 * (1. - (ny mod 2)/float(ny))
-  kx = rebin(findgen(nx, start = kx0, increment = 1./nx), nx, ny, /sample)
-  ky = rebin(findgen(1, ny, start = ky0, increment = 1./ny), nx, ny, /sample)
-  if dodeinterlace then ky /= 2.
-  k = sqrt(kx^2 + ky^2) > 1e-6
-  ker = kx*ky/k^2
-  if order gt 0 then $
-     ker ^= 2.*order+1.
-  ker /= k
+                                ; K(k) = \sin^n(2\theta) / k
+  if n_elements(kernel) ne n_elements(psi) then begin
+     kx0 = -0.5 * (1. - (nx mod 2)/float(nx))
+     ky0 = -0.5 * (1. - (ny mod 2)/float(ny))
+     kx = rebin(findgen(nx, start = kx0, increment = 1./nx), nx, ny, /sample)
+     ky = rebin(findgen(1, ny, start = ky0, increment = 1./ny), nx, ny, /sample)
+     if dodeinterlace then ky /= 2.
+     k = sqrt(kx^2 + ky^2) > 1e-6
+     kernel = kx*ky/k^2
+     if order gt 0 then $
+        kernel ^= 2.*order+1.
+     kernel /= k
+  endif
 
   ;; convolve orientational order parameter with
   ;; orientational alignment kernel using
   ;; Fourier convolution theorem
   psi = fft(psi, -1, /center, /overwrite)
-  psi = fft(psi*ker, 1, /center, /overwrite)
+  psi = fft(psi*kernel, 1, /center, /overwrite)
 
   !except = except
   
