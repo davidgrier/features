@@ -108,6 +108,7 @@
 ; 04/09/2015 DGG Implemented SMOOTHING.
 ; 04/29/2016 DGG Implemented ORDER, changed to sin(2\theta) rather
 ;    than exp(2 i \theta).
+; 05/14/2016 DGG Retain kernel for efficiency.
 ;
 ; :Author:
 ;    David G. Grier, Mark Hannel, Ellery Russell and David B. Ruffner
@@ -154,7 +155,7 @@ function circletransform, a_, $
      a = float(a_)
 
   ;; gradient of image
-  ;; \nabla a = (dadx, dady)
+  ;; $\nabla a = (dadx, dady)$
   g_order = 3
   g_range = 7
   if isa(smoothing, /scalar, /number) && (smoothing gt 0) then $
@@ -168,14 +169,14 @@ function circletransform, a_, $
 
   ;; orientational order parameter
   gradsq = dadx^2 + dady^2 > 1e-3
-  psi = (dadx * dady)/gradsq    ; \psi = \sin(2\theta)/2
+  psi = (dadx * dady)/gradsq    ; $\psi = \sin(2\theta)/2$
   if order gt 0 then $
-     psi ^= 2.*order + 1.       ; \psi = \sin^n(2\theta)
+     psi ^= 2.*order + 1.       ; $\psi = \sin^n(2\theta)$
   if keyword_set(gradient_weighted) then $
-     psi *= gradsq              ; \psi = |\nabla a|^2 \sin^n(2\theta)
+     psi *= gradsq              ; $\psi = |\nabla a|^2 \sin^n(2\theta)$
 
   ;; Fourier transform of the orientational alignment kernel:
-                                ; K(k) = \sin^n(2\theta) / k
+  ;; $K(k) = \sin^n(2\theta) / k$
   if n_elements(kernel) ne n_elements(psi) then begin
      kx0 = -0.5 * (1. - (nx mod 2)/float(nx))
      ky0 = -0.5 * (1. - (ny mod 2)/float(ny))
