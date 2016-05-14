@@ -74,6 +74,9 @@ function ctfeature, a, $
                     pickn = pickn, $
                     count = count, $
                     deinterlace = deinterlace, $
+                    kernel = kernel, $
+                    dadx = dadx, $
+                    dady = dady, $
                     quiet = quiet, $
                     _extra = ex
 
@@ -94,7 +97,10 @@ function ctfeature, a, $
                        smoothing = smoothing, $
                        gradient_weighted = gradient_weighted, $
                        order = 5, $
-                       deinterlace = deinterlace)
+                       deinterlace = deinterlace, $
+                       kernel = kernel, $
+                       dadx = dadx, $
+                       dady = dady)
 
   ;; estimate threshold for feature detection
   if ~isa(threshold, /number, /scalar) then begin
