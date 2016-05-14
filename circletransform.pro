@@ -46,6 +46,9 @@
 ;        for each image.  This keyword allows a computed kernel to be
 ;        retained and reused for subsequent transforms.
 ;
+;    psi : out, optional, type=array
+;        Orientational alignment order parameter at each point
+;
 ; :Procedure:
 ;    Compute the gradient of the image.  The local gradient at each
 ;    pixel defines a line along which the center of a circle may
@@ -125,6 +128,7 @@ function circletransform, a_, $
                           kernel = kernel, $
                           dadx = dadx, $
                           dady = dady, $
+                          psi = psi, $
                           _extra = ex
 
   COMPILE_OPT IDL2
@@ -195,12 +199,12 @@ function circletransform, a_, $
   ;; convolve orientational order parameter with
   ;; orientational alignment kernel using
   ;; Fourier convolution theorem
-  psi = fft(psi, -1, /center, /overwrite)
-  psi = fft(psi*kernel, 1, /center, /overwrite)
+  result = fft(psi, -1, /center)
+  result = fft(result*kernel, 1, /center, /overwrite)
 
   !except = except
   
   ;; intensity of convolution identifies rotationally
   ;; symmetric centers
-  return, real_part(psi)^2
+  return, real_part(result)^2
 end
