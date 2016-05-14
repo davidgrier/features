@@ -40,6 +40,15 @@
 ;    quiet : in, optional, type=boolean
 ;        If set, do not print informational messages.
 ;
+;    kernel : in, out, optional, type=array
+;        Useful for reusing the kernel for circletransform.
+;
+;    dadx : out, optional, type=array
+;        Derivative with respect to x of image
+;
+;    dady : out, optional, type=array
+;        Derivative with respect to y of image
+;
 ; :Procedure:
 ;    CIRCLETRANSFORM transforms ring-like features in an image into
 ;        bright features on a dark background.
