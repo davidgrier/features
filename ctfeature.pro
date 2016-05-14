@@ -1,50 +1,61 @@
+; docstyle = 'rst'
+
 ;+
-; NAME:
-;    ctfeature
+; Identify ring-like features in images
 ;
-; PURPOSE:
-;    Identify ring-like features in images
+; :Examples:
+;    IDL> f = ctfeature(a)
 ;
-; CATEGORY:
-;    Image analysis, feature detection
+; :Params:
+;    a : in, required, type=array
+;        Two-dimensional image data
 ;
-; CALLING SEQUENCE:
-;    f = ctfeature(a)
+; :Returns:
+;    f : [2,npts] array of feature coordinates
 ;
-; INPUTS:
-;    a: two-dimensional image data
+; :Keywords:
+;    threshold : in, optional, type=float, default=`estimated from A`
+;        Threshold for detecting features
 ;
-; KEYWORD PARAMETERS:
-;    threshold: threshold for detecting features
-;        Default: estimated from A.
+;    smoothing : in, optional, type=integer, default=0
+;        Smoothing factor.  Larger values yield
+;        more smoothing during gradient calculations, improving
+;        noise suppression at the expense of suppressing fine
+;        features.
 ;
-;    smoothing: Additional smoothing to suppress noise at the
-;        expense of fine features.
-;        Default: 0
+;    pickn : in, optional, typle=integer
+;        Number of features to seek, brightest first.
+;        Default: Return all features.
 ;
-;    pickn: number of features to seek, brightest first
-;        Default: all
+;    count : out, optional
+;        Number of features returned.
 ;
-;    count: number of features returned.
+;    gradient_weighted : in, optional, type=boolean
+;        Use original gradient-weighted circletransform algorithm.
 ;
-; KEYWORD FLAGS:
-;    gradient_weighted: Set to use original gradient-weighted
-;        circletransform algorithm.
-;
-;    deinterlace: Set to an even number to find features
+;    deinterlace : in, optional, type=integer
+;        Set to an even number to find features
 ;        in the even field, odd in the odd.
 ;
-;    quiet: If set, do not print informational messages.
+;    quiet : in, optional, type=boolean
+;        If set, do not print informational messages.
 ;
-; OUTPUTS:
-;    f: [2,npts] array of feature coordinates
-;
-; PROCEDURE:
-;    CT2 transforms ring-like features in an image into
+; :Procedure:
+;    CIRCLETRANSFORM transforms ring-like features in an image into
 ;        bright features on a dark background.
 ;    FASTFEATURE locates these bright features.
 ;
-; MODIFICATION HISTORY:
+; :References:
+; 1. F. C. Cheong, B. Sun, R. Dreyfus, J. Amato-Grill, K. Xiao, L. Dixon
+;    & D. G. Grier, "Flow visualization and flow cytometry with
+;    holographic video microscopy," Optics Express 17,
+;    13071-13079 (2009)
+;
+; 2. B. J. Krishnatreya & D. G. Grier, "Fast feature identification
+;    for holographic tracking: The orientation alignment transform,"
+;    preprint (2013)
+;
+; :History:
 ; 10/15/2012 Written by David G. Grier, New York University
 ; 11/10/2012 DGG Added QUIET keyword.  Changed default smooth factor
 ;   from 3 to 5.  Cast threshold to an integer.
@@ -64,7 +75,11 @@
 ; 12/13/2013 DGG Use EXTRA for compatibility with older versions
 ; 04/08/2015 DGG Use MOMENT for threshold calculation.
 ;
-; Copyright (c) 2012-2015 David G. Grier
+; :Author:
+;    David G. Grier, New York University
+;
+; :Copyright:
+;    Copyright (c) 2012-2015 David G. Grier
 ;-
 function ctfeature, a, $
                     ct = ct, $
